@@ -11,4 +11,13 @@ public class Paciente {
     private LocalDate fechaIngreso;
     private Domicilio domicilio;
 
+    public Paciente(Long id, String nombre, String apellido, String dni, String email, LocalDate fechaIngreso, Domicilio domicilio) {
+        this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.dni = dni;
+        this.email = email;
+        this.fechaIngreso = fechaIngreso;
+        this.domicilio = domicilio;
+    }
 }

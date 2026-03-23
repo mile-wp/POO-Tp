@@ -11,7 +11,7 @@ public class Paciente {
     private LocalDate fechaIngreso;
     private Domicilio domicilio;
 
-    public Paciente(Long id, String nombre, String apellido, String dni, String email, LocalDate fechaIngreso, Domicilio domicilio) {
+    public Paciente() {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -19,5 +19,14 @@ public class Paciente {
         this.email = email;
         this.fechaIngreso = fechaIngreso;
         this.domicilio = domicilio;
+    }
+
+    public void mostrarPaciente() {
+        System.out.println("Id: "+ id);
+        System.out.println("Nombre completo: "+ nombre +apellido);
+        System.out.println("Documento de identificación: "+ dni);
+        System.out.println("Correo electrónico: "+ email);
+        System.out.println("Fecha de ingreso: "+ fechaIngreso);
+        System.out.println("Domicilio: "+ domicilio);;
     }
 }

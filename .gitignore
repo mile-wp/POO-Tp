@@ -1,0 +1,7 @@
+# Archivos compilados (código binario)
+/out/
+*.class
+
+# Configuraciones locales de IntelliJ IDEA
+/.idea/
+*.iml

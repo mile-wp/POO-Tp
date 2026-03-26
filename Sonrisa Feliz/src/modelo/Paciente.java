@@ -21,6 +21,11 @@ public class Paciente {
         this.domicilio = domicilio;
     }
 
+    //Agrego para que funcione BusquedaPaciente
+    public Long getId() {
+        return id;
+
+
     public void mostrarPaciente() {
         System.out.println("Id: "+ id);
         System.out.println("Nombre completo: "+ nombre +apellido);

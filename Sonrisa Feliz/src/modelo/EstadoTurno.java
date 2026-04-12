@@ -1,5 +1,10 @@
 package modelo;
 
-public enum EstadoTurno {
+import Interfaces.IEstadoTurno;
+
+public enum EstadoTurno implements IEstadoTurno {
     PENDIENTE, CONFIRMADO, CANCELADO, COMPLETADO
+
+
+
 }

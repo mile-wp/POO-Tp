@@ -24,7 +24,7 @@ public class Paciente {
     //Agrego para que funcione BusquedaPaciente
     public Long getId() {
         return id;
-
+    }
 
     public void mostrarPaciente() {
         System.out.println("Id: "+ id);
@@ -32,6 +32,6 @@ public class Paciente {
         System.out.println("Documento de identificación: "+ dni);
         System.out.println("Correo electrónico: "+ email);
         System.out.println("Fecha de ingreso: "+ fechaIngreso);
-        System.out.println("Domicilio: "+ domicilio);;
+        System.out.println("Domicilio: "+ domicilio);
     }
 }

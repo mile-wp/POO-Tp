@@ -23,51 +23,53 @@ public class Domicilio implements IDomicilio {
 
     @Override
     public Long getId() {
-        return 0L;
+        return id;
     }
 
     @Override
     public void setId(Long id) {
-
+        this.id = id;
     }
+
 
     @Override
     public String getCalle() {
-        return "";
+        return calle;
     }
 
     @Override
     public void setCalle(String calle) {
-
+        this.calle = calle;
     }
 
     @Override
     public String getNumero() {
-        return "";
+        return numero;
     }
 
     @Override
     public void setNumero(String numero) {
+        this.numero = numero;
 
     }
 
     @Override
     public String getLocalidad() {
-        return "";
+        return localidad;
     }
 
     @Override
     public void setLocalidad(String localidad) {
-
+        this.localidad = localidad;
     }
 
     @Override
     public String getProvincia() {
-        return "";
+        return provincia;
     }
 
     @Override
     public void setProvincia(String provincia) {
-
+        this.provincia = provincia;
     }
 }

@@ -1,6 +1,8 @@
 package modelo;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Paciente {
@@ -9,27 +11,36 @@ public class Paciente {
     private String apellido;
     private String dni;
     private String email;
-    private String telefono; // Agregado para coincidir con el UML
     private LocalDate fechaIngreso;
     private Domicilio domicilio;
 
-    // Constructor sin id y sin fechaIngreso (se genera sola)
-    public Paciente(String nombre, String apellido, String dni, String email, String telefono, Domicilio domicilio) {
+    //Lista de pacientes
+    private static List<Paciente> pacientes = new ArrayList<>();
+
+    //Constructor
+    public Paciente(Long id, String nombre, String apellido, String dni, String email, LocalDate fechaIngreso, Domicilio domicilio) {
+        this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
         this.dni = dni;
         this.email = email;
-        this.telefono = telefono;
+        this.fechaIngreso = fechaIngreso;
         this.domicilio = domicilio;
-        this.fechaIngreso = LocalDate.now(); // La fecha se setea automáticamente al crear el objeto
     }
 
-    // Método de negocio
-    public String getNombreCompleto() {
-        return this.apellido + ", " + this.nombre;
+
+    public void mostrarPaciente() {
+        System.out.println("Id: "+ id);
+        System.out.println("Nombre completo: "+ nombre +apellido);
+        System.out.println("Documento de identificación: "+ dni);
+        System.out.println("Correo electrónico: "+ email);
+        System.out.println("Fecha de ingreso: "+ fechaIngreso);
+        System.out.println("Domicilio: "+ domicilio);;
     }
 
-    // Getters y Setters reales (ya no devuelven strings vacíos ni nulos)
+
+    //Agregamos getters y setters
+    
     public Long getId() {
         return id;
     }
@@ -54,6 +65,10 @@ public class Paciente {
         this.apellido = apellido;
     }
 
+    public String getNombreCompleto() {
+        return this.apellido + ", " + this.nombre;
+    }
+
     public String getDni() {
         return dni;
     }
@@ -68,14 +83,6 @@ public class Paciente {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
     }
 
     public LocalDate getFechaIngreso() {
@@ -93,8 +100,6 @@ public class Paciente {
     public void setDomicilio(Domicilio domicilio) {
         this.domicilio = domicilio;
     }
-
-    // equals y hashCode basados en el DNI (La clave natural de la persona)
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,23 +108,60 @@ public class Paciente {
         return Objects.equals(dni, paciente.dni);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(dni);
+    public String toString() {
+        return "ID: " + id + " | " + apellido + ", " + nombre + " | DNI: " + dni +  " | Email: " + email;
     }
 
-    // toString (Reemplaza a mostrarPaciente() para buenas prácticas de POO)
-    @Override
-    public String toString() {
-        return "Paciente{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", dni='" + dni + '\'' +
-                ", email='" + email + '\'' +
-                ", telefono='" + telefono + '\'' +
-                ", fechaIngreso=" + fechaIngreso +
-                ", domicilio=" + domicilio + // Esto llamará automáticamente al toString() de Domicilio
-                '}';
+    // Alta de paciente
+    public static void registrar(Paciente paciente) {
+        pacientes.add(paciente);
     }
+
+    // Búsqueda por ID
+    public Paciente buscarPorId(Long id) {
+        for (int i = 0; i < pacientes.size(); i++) {
+            Paciente p = pacientes.get(i);
+            if (p.getId().equals(id)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // Búsqueda por DNI
+    public Paciente buscarPorDni(String dni) {
+        for (int i = 0; i < pacientes.size(); i++) {
+            Paciente p = pacientes.get(i);
+            if (p.getDni().equals(dni)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // Listado de todos los pacientes
+    public List<Paciente> listarTodos() {
+        return new ArrayList<>(pacientes);
+    }
+
+    // Modificación de datos
+    public void modificar(Long id, Paciente nuevosDatos) {
+        Paciente p = buscarPorId(id);
+        if (p != null) {
+            p.setNombre(nuevosDatos.getNombre());
+            p.setApellido(nuevosDatos.getApellido());
+            p.setDni(nuevosDatos.getDni());
+            p.setEmail(nuevosDatos.getEmail());
+            p.setDomicilio(nuevosDatos.getDomicilio());
+        }
+    }
+
+    // Eliminación sin verificacion de turno
+    public void eliminar(Long id) {
+        Paciente p = buscarPorId(id); // Primera búsqueda
+        if (p != null) {
+            pacientes.remove(p); // Segunda búsqueda interna para borrar
+        }
+    }
+
 }

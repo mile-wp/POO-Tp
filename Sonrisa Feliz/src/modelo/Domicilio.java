@@ -7,8 +7,9 @@ public class Domicilio {
     private String localidad;
     private String provincia;
 
-    // Constructor (Sin el ID, como en el UML)
-    public Domicilio(String calle, String numero, String localidad, String provincia) {
+    // Constructor 
+    public Domicilio(Long id, String calle, String numero, String localidad, String provincia) {
+        this.id = id;
         this.calle = calle;
         this.numero = numero;
         this.localidad = localidad;

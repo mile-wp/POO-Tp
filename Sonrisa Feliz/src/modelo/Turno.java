@@ -87,11 +87,10 @@ public class Turno {
         this.estado = estado;
     }
 
-    @Override
     public String toString() {
         return "Turno #" + (id != null ? id : "S/N") + " [" + estado + "]\n" +
                 "Fecha: " + fecha + " a las " + hora + "hs\n" +
-                "Paciente: " + paciente.getNombreCompleto() + "\n" +
-                "Odontólogo: " + odontologo.getNombreCompleto();
+                "Paciente: " + paciente.getNombre() + " " + paciente.getApellido() + "\n" +
+                "Odontólogo: " + odontologo.getNombre() + " " + odontologo.getApellido() + " (Mat: " + odontologo.getMatricula() + ")";
     }
 }

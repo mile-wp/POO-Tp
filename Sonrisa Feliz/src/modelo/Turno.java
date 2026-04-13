@@ -1,11 +1,11 @@
 package modelo;
 
-import Interfaces.ITurno;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
-public class Turno implements ITurno {
+public class Turno {
     private Long id;
     private Paciente paciente;
     private Odontologo odontologo;
@@ -13,77 +13,85 @@ public class Turno implements ITurno {
     private LocalTime hora;
     private EstadoTurno estado;
 
-    //Creamos constructor
-
-    public Turno(Long id, Paciente paciente, Odontologo odontologo, LocalDate fecha, LocalTime hora, EstadoTurno estado) {
-        this.id = id;
+    // Constructor: El ID se deja para ser asignado por el sistema/DB
+    // El estado inicial suele ser PENDIENTE por defecto
+    public Turno(Paciente paciente, Odontologo odontologo, LocalDate fecha, LocalTime hora) {
         this.paciente = paciente;
         this.odontologo = odontologo;
         this.fecha = fecha;
         this.hora = hora;
+        this.estado = EstadoTurno.PENDIENTE;
+    }
+
+    // Lógica de negocio: Verifica si el turno es posterior al momento actual
+    public boolean esFuturo() {
+        if (fecha == null || hora == null) return false;
+
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime momentoTurno = LocalDateTime.of(this.fecha, this.hora);
+
+        return momentoTurno.isAfter(ahora);
+    }
+
+    // Método para cambiar el estado (Útil para cancelaciones o asistencias)
+    public void cambiarEstado(EstadoTurno nuevoEstado) {
+        this.estado = nuevoEstado;
+    }
+
+    // Getters y Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Paciente getPaciente() {
+        return paciente;
+    }
+
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
+    }
+
+    public Odontologo getOdontologo() {
+        return odontologo;
+    }
+
+    public void setOdontologo(Odontologo odontologo) {
+        this.odontologo = odontologo;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    public LocalTime getHora() {
+        return hora;
+    }
+
+    public void setHora(LocalTime hora) {
+        this.hora = hora;
+    }
+
+    public EstadoTurno getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoTurno estado) {
         this.estado = estado;
     }
 
-
-    //Agregamos getters y setters
-
     @Override
-    public Long getId() {
-        return 0L;
-    }
-
-    @Override
-    public void setId(Long Id) {
-
-    }
-
-    @Override
-    public Paciente getPaciente() {
-        return null;
-    }
-
-    @Override
-    public void setPaciente(Paciente paciente) {
-
-    }
-
-    @Override
-    public Odontologo getOdontologo() {
-        return null;
-    }
-
-    @Override
-    public void setOdontologo(Odontologo odontologo) {
-
-    }
-
-    @Override
-    public LocalDate getFecha() {
-        return null;
-    }
-
-    @Override
-    public void setFecha(LocalDate fecha) {
-
-    }
-
-    @Override
-    public LocalTime GetHora() {
-        return null;
-    }
-
-    @Override
-    public void setHora(LocalTime hora) {
-
-    }
-
-    @Override
-    public EstadoTurno getEstado() {
-        return null;
-    }
-
-    @Override
-    public void setEstado(EstadoTurno estado) {
-
+    public String toString() {
+        return "Turno #" + (id != null ? id : "S/N") + " [" + estado + "]\n" +
+                "Fecha: " + fecha + " a las " + hora + "hs\n" +
+                "Paciente: " + paciente.getNombreCompleto() + "\n" +
+                "Odontólogo: " + odontologo.getNombreCompleto();
     }
 }

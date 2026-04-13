@@ -7,12 +7,12 @@ public class SistemaPacientes {
 
     private List<Paciente> pacientes = new ArrayList<>();
 
-    // 1. Alta de paciente
+    // Alta de paciente
     public void registrar(Paciente paciente) {
         pacientes.add(paciente);
     }
 
-    // 2. Búsqueda por ID
+    // Búsqueda por ID
     public Paciente buscarPorId(Long id) {
         for (int i = 0; i < pacientes.size(); i++) {
             Paciente p = pacientes.get(i);
@@ -23,7 +23,7 @@ public class SistemaPacientes {
         return null;
     }
 
-    // 3. Búsqueda por DNI
+    // Búsqueda por DNI
     public Paciente buscarPorDni(String dni) {
         for (int i = 0; i < pacientes.size(); i++) {
             Paciente p = pacientes.get(i);
@@ -34,12 +34,12 @@ public class SistemaPacientes {
         return null;
     }
 
-    // 4. Listado de todos los pacientes
+    // Listado de todos los pacientes
     public List<Paciente> listarTodos() {
         return new ArrayList<>(pacientes);
     }
 
-    // 5. Modificación de datos
+    // Modificación de datos
     public void modificar(Long id, Paciente nuevosDatos) {
         Paciente p = buscarPorId(id);
         if (p != null) {
@@ -51,7 +51,7 @@ public class SistemaPacientes {
         }
     }
 
-    // 6. Eliminación sin verificacion de turno
+    // Eliminación sin verificacion de turno
     public void eliminar(Long id) {
         Paciente p = buscarPorId(id); // Primera búsqueda
         if (p != null) {

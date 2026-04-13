@@ -110,6 +110,6 @@ public class Paciente implements IPaciente {
 
     @Override
     public String toString() {
-        return "ID: " + id + " | " + apellido + ", " + nombre + " | DNI: " + dni;
+        return "ID: " + id + " | " + apellido + ", " + nombre + " | DNI: " + dni +  " | Email: " + email;
     }
 }

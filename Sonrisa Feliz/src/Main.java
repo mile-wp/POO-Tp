@@ -7,7 +7,7 @@ import modelo.SistemaPacientes;
 
 public class Main {
     public static void main(String[] args) {
-        
+
         System.out.println("¡Iniciando Sistema Sonrisa Feliz!");
         
         SistemaPacientes sistema = new SistemaPacientes();
@@ -24,6 +24,10 @@ public class Main {
         sistema.registrar(p1);
         sistema.registrar(p2);
 
+        //Listado de Domicilios
+        System.out.println("\n=== DOMICILIOS REGISTRADOS ===");
+        System.out.println(dom1.toString());
+        System.out.println(dom2.toString());
 
         //Listado inicial
         System.out.println("\n=== LISTADO INICIAL ===");

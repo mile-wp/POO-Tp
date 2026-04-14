@@ -21,14 +21,14 @@ public class Main {
         Paciente p3 = new Paciente(3L, "Carlos", "Gómez", "33333333", "carlos@mail.com", LocalDate.of(2023, 1, 12), domGomez);
 
         // 3. CREACIÓN DE ODONTÓLOGOS (3)
-        Odontologo o1 = new Odontologo(9L, "García", "MAT-001");
+        Odontologo o1 = new Odontologo(9L, "Joaquin", "Fernandez", "MAT-001");
         o1.agregarEspecialidad("Odontología General");
         o1.agregarEspecialidad("Extracciones"); // Comprobamos que el Set guarda varias especialidades
 
-        Odontologo o2 = new Odontologo("María", "Fernández", "MAT-002");
+        Odontologo o2 = new Odontologo(10L, "Laura", "Garcia", "MAT-002");
         o2.agregarEspecialidad("Ortodoncia");
 
-        Odontologo o3 = new Odontologo("Laura", "Martínez", "MAT-003");
+        Odontologo o3 = new Odontologo(11L, "Martín", "Martinez", "MAT-003");
         o3.agregarEspecialidad("Implantología");
 
         // 4. CREACIÓN DE TURNOS (2)

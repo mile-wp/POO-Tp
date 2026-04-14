@@ -7,6 +7,7 @@ public class Domicilio {
     private String localidad;
     private String provincia;
 
+    // Constructor 
     public Domicilio(Long id, String calle, String numero, String localidad, String provincia) {
         this.id = id;
         this.calle = calle;
@@ -15,4 +16,50 @@ public class Domicilio {
         this.provincia = provincia;
     }
 
+    // Getters y Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCalle() {
+        return calle;
+    }
+
+    public void setCalle(String calle) {
+        this.calle = calle;
+    }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    public String getLocalidad() {
+        return localidad;
+    }
+
+    public void setLocalidad(String localidad) {
+        this.localidad = localidad;
+    }
+
+    public String getProvincia() {
+        return provincia;
+    }
+
+    public void setProvincia(String provincia) {
+        this.provincia = provincia;
+    }
+
+    // toString optimizado para una lectura natural
+    @Override
+    public String toString() {
+        return calle + " " + numero + ", " + localidad + " (" + provincia + ")";
+    }
 }

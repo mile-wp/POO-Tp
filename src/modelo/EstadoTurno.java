@@ -1,5 +1,8 @@
 package modelo;
 
 public enum EstadoTurno {
-    PENDIENTE, CONFIRMADO, CANCELADO, COMPLETADO
+    PENDIENTE,
+    CONFIRMADO,
+    CANCELADO,
+    COMPLETADO
 }

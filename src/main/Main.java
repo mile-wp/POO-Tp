@@ -1,11 +1,12 @@
-package modelo;
+package main;
+
+import modelo.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Main {
-    public static void main(String[] args) {
-
+    public static void main(String[] args){
         System.out.println("=== INICIANDO SISTEMA DE CLÍNICA ODONTOLÓGICA ===\n");
 
         // 1. CREACIÓN DE DOMICILIOS
@@ -20,7 +21,7 @@ public class Main {
         Paciente p3 = new Paciente(3L, "Carlos", "Gómez", "33333333", "carlos@mail.com", LocalDate.of(2023, 1, 12), domGomez);
 
         // 3. CREACIÓN DE ODONTÓLOGOS (3)
-        Odontologo o1 = new Odontologo("Roberto", "García", "MAT-001");
+        Odontologo o1 = new Odontologo(9L, "García", "MAT-001");
         o1.agregarEspecialidad("Odontología General");
         o1.agregarEspecialidad("Extracciones"); // Comprobamos que el Set guarda varias especialidades
 
@@ -119,5 +120,4 @@ public class Main {
             System.out.println(p.toString());
         }
     }
-
-}
+    }

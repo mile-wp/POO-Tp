@@ -118,7 +118,7 @@ public class Paciente {
     }
 
     // Búsqueda por ID
-    public Paciente buscarPorId(Long id) {
+    public static Paciente buscarPorId(Long id) {
         for (int i = 0; i < pacientes.size(); i++) {
             Paciente p = pacientes.get(i);
             if (p.getId().equals(id)) {
@@ -129,7 +129,7 @@ public class Paciente {
     }
 
     // Búsqueda por DNI
-    public Paciente buscarPorDni(String dni) {
+    public static Paciente buscarPorDni(String dni) {
         for (int i = 0; i < pacientes.size(); i++) {
             Paciente p = pacientes.get(i);
             if (p.getDni().equals(dni)) {
@@ -140,7 +140,7 @@ public class Paciente {
     }
 
     // Listado de todos los pacientes
-    public List<Paciente> listarTodos() {
+    public static List<Paciente> listarTodos() {
         return new ArrayList<>(pacientes);
     }
 
@@ -157,7 +157,7 @@ public class Paciente {
     }
 
     // Eliminación sin verificacion de turno
-    public void eliminar(Long id) {
+    public static void eliminar(Long id) {
         Paciente p = buscarPorId(id); // Primera búsqueda
         if (p != null) {
             pacientes.remove(p); // Segunda búsqueda interna para borrar

@@ -81,18 +81,18 @@ public class Main {
 
         //Listado inicial
         System.out.println("\n=== LISTADO INICIAL ===");
-        for (Paciente p : p4.listarTodos()) {
+        for (Paciente p : Paciente.listarTodos()) {
             System.out.println(p.toString());
         }
 
         //Buscar por ID
         System.out.println("\n=== BUSCAR POR ID ===");
-        Paciente buscadoId = p4.buscarPorId(1L);
+        Paciente buscadoId = Paciente.buscarPorId(1L);
         System.out.println(buscadoId.toString());
 
         //Buscar por DNI
         System.out.println("\n=== BUSCAR POR DNI ===");
-        Paciente buscadoDni = p4.buscarPorDni("87654321");
+        Paciente buscadoDni = Paciente.buscarPorDni("87654321");
         System.out.println(buscadoDni.toString());
 
         //Modificar paciente
@@ -109,23 +109,15 @@ public class Main {
         p4.modificar(1L, nuevosDatos);
 
         System.out.println("\n=== DESPUES DE MODIFICAR ===");
-        System.out.println(p4.buscarPorId(1L).toString());
+        System.out.println(Paciente.buscarPorId(1L).toString());
 
         //Eliminar paciente
-        p4.eliminar(2L);
+        Paciente.eliminar(2L);
 
         System.out.println("\n=== DESPUES DE ELIMINAR LISTA DE TODOS LOS PACIENTES ===");
-        for (Paciente p : p4.listarTodos()) {
+        for (Paciente p : Paciente.listarTodos()) {
             System.out.println(p.toString());
         }
     }
 
-    
-    
-
-
-        
-
-
 }
-

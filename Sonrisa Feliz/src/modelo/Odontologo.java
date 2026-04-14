@@ -1,6 +1,8 @@
 package modelo;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,8 +12,8 @@ public class Odontologo {
     private String apellido;
     private String matricula;
     private Set<String> especialidades; // Agregamos el Set como en el UML
+  
 
-    // Constructor (Sin el ID, como acordamos en el UML)
     public Odontologo(String nombre, String apellido, String matricula) {
         this.nombre = nombre;
         this.apellido = apellido;
@@ -95,4 +97,5 @@ public class Odontologo {
                 ", especialidades=" + especialidades +
                 '}';
     }
+
 }

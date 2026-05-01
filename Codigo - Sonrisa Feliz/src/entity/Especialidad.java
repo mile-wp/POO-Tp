@@ -1,11 +1,8 @@
-package modelo;
+package entity;
 
 public enum Especialidad {
-    ODONTOLOGIA_GENERAL,
     ORTODONCIA,
     ENDODONCIA,
     IMPLANTOLOGIA,
-    PEDIATRIA,
     EXTRACCIONES,
-    CIRUGIA_MAXILOFACIAL
 }

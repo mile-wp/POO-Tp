@@ -1,59 +1,105 @@
 package main;
 
+import entity.Odontologo;
 import entity.Paciente;
-import repository.PacienteRepository;
-
+import entity.Turno;
+import service.OdontologoService;
+import service.PacienteService;
+import service.TurnoService;
 import java.time.LocalDate;
-import java.util.Optional;
+import java.time.LocalTime;
 
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("=== INICIANDO PRUEBA DE LA CAPA REPOSITORY ===\n");
 
-        // 1. Instanciamos nuestra "Base de Datos"
-        PacienteRepository pacienteRepo = new PacienteRepository();
+        System.out.println("=== INICIANDO TEST DE INTEGRACIÓN Y REGLAS DE NEGOCIO ===\n");
 
-        // 2. CREATE (Crear): Preparamos dos pacientes SIN ID (el repo debe asignarlo)
-        Paciente p1 = new Paciente(null, "Juan", "Pérez", "11111111", "juan@mail.com", "1234", LocalDate.now(), "Calle 1", "100", "Quilmes", "BsAs");
-        Paciente p2 = new Paciente(null, "María", "Gómez", "22222222", "maria@mail.com", "5678", LocalDate.now(), "Calle 2", "200", "Quilmes", "BsAs");
+        // 1. COMPARTIENDO LA MEMORIA (Inyección de dependencias manual)
+        PacienteService pacienteService = new PacienteService();
+        OdontologoService odontologoService = new OdontologoService();
+        TurnoService turnoService = new TurnoService(pacienteService, odontologoService);
 
-        System.out.println("Guardando pacientes...");
-        pacienteRepo.guardar(p1);
-        pacienteRepo.guardar(p2);
+        // ==========================================
+        // PRUEBA 1: VALIDACIONES DE PACIENTE
+        // ==========================================
+        System.out.println("--- PRUEBA 1: PACIENTES ---");
+        Paciente p1 = new Paciente();
+        p1.setNombre("Juan");
+        p1.setApellido("Perez");
+        p1.setDni("11111111");
 
-        // Comprobamos que el repositorio les asignó IDs automáticamente (1 y 2)
-        System.out.println("✅ Paciente 1 guardado con ID: " + p1.getId());
-        System.out.println("✅ Paciente 2 guardado con ID: " + p2.getId());
+        Paciente p2 = new Paciente();
+        p2.setNombre("Maria");
+        p2.setApellido("Gomez");
+        p2.setDni("11111111"); // DNI DUPLICADO INTENCIONALMENTE
 
-        // 3. READ (Leer todos): Comprobamos el tamaño de la lista
-        System.out.println("\nConsultando todos los pacientes...");
-        System.out.println("✅ Total de pacientes en la clínica: " + pacienteRepo.buscarTodos().size());
+        pacienteService.registrar(p1); // Debería funcionar
+        pacienteService.registrar(p2); // Debería dar ERROR de DNI duplicado
 
-        // 4. READ (Leer por ID con Optional): Buscamos el ID 1
-        System.out.println("\nBuscando paciente con ID 1...");
-        Optional<Paciente> pacienteEncontrado = pacienteRepo.buscarPorId(1L);
+        // ==========================================
+        // PRUEBA 2: VALIDACIONES DE ODONTÓLOGO
+        // ==========================================
+        System.out.println("\n--- PRUEBA 2: ODONTÓLOGOS ---");
+        Odontologo o1 = new Odontologo();
+        o1.setNombre("Dr. Carlos");
+        o1.setApellido("Lopez");
+        o1.setMatricula("MP-100");
 
-        if (pacienteEncontrado.isPresent()) {
-            System.out.println("✅ Encontrado: " + pacienteEncontrado.get().getNombre() + " " + pacienteEncontrado.get().getApellido());
-        } else {
-            System.out.println("❌ No se encontró el paciente.");
-        }
+        Odontologo o2 = new Odontologo();
+        o2.setNombre("Dra. Ana");
+        o2.setApellido("Martinez");
+        o2.setMatricula("MP-100"); // MATRÍCULA DUPLICADA INTENCIONALMENTE
 
-        // 5. DELETE (Eliminar): Borramos al paciente 1
-        System.out.println("\nEliminando paciente con ID 1...");
-        pacienteRepo.eliminar(1L);
+        odontologoService.registrar(o1); // Debería funcionar
+        odontologoService.registrar(o2); // Debería dar ERROR de Matrícula duplicada
 
-        // 6. Verificamos que se haya eliminado
-        System.out.println("Consultando total de pacientes nuevamente...");
-        System.out.println("✅ Total de pacientes tras borrar: " + pacienteRepo.buscarTodos().size());
+        // ==========================================
+        // PRUEBA 3: VALIDACIONES DE TURNO (EL PLATO FUERTE)
+        // ==========================================
+        System.out.println("\n--- PRUEBA 3: TURNOS ---");
 
-        // Intentamos buscar el ID 1 otra vez para ver cómo actúa el Optional vacío
-        Optional<Paciente> busquedaFallida = pacienteRepo.buscarPorId(1L);
-        if (busquedaFallida.isEmpty()) {
-            System.out.println("✅ Búsqueda correcta: El paciente 1 ya no existe en el sistema.");
-        }
+        // Turno 1: Éxito total (Turno para un paciente y doc que existen, en horario válido)
+        Turno turnoValido = new Turno();
+        turnoValido.setPaciente(p1); // Juan (ID 1)
+        turnoValido.setOdontologo(o1); // Dr. Carlos (ID 1)
+        // Usamos una fecha futura (ej: 10 de Mayo de 2026) y hora válida (10:00 AM)
+        turnoValido.setFecha(LocalDate.of(2026, 5, 10));
+        turnoValido.setHora(LocalTime.of(10, 0));
 
-        System.out.println("\n=== PRUEBA DEL REPOSITORIO FINALIZADA CON ÉXITO ===");
+        System.out.println("> Intentando registrar Turno 1 (Válido)...");
+        turnoService.registrar(turnoValido); // Debería registrarse con éxito
+
+        // Turno 2: Falla por Viaje en el Tiempo (Fecha en el pasado)
+        Turno turnoPasado = new Turno();
+        turnoPasado.setPaciente(p1);
+        turnoPasado.setOdontologo(o1);
+        turnoPasado.setFecha(LocalDate.of(2025, 1, 1)); // Año pasado
+        turnoPasado.setHora(LocalTime.of(10, 0));
+
+        System.out.println("\n> Intentando registrar Turno 2 (Fecha pasada)...");
+        turnoService.registrar(turnoPasado); // Debería dar ERROR
+
+        // Turno 3: Falla por Horario de Clínica (Ej: 20:00 PM)
+        Turno turnoFueraDeHora = new Turno();
+        turnoFueraDeHora.setPaciente(p1);
+        turnoFueraDeHora.setOdontologo(o1);
+        turnoFueraDeHora.setFecha(LocalDate.of(2026, 5, 11));
+        turnoFueraDeHora.setHora(LocalTime.of(20, 0)); // La clínica cierra a las 18:00
+
+        System.out.println("\n> Intentando registrar Turno 3 (Fuera de horario)...");
+        turnoService.registrar(turnoFueraDeHora); // Debería dar ERROR
+
+        // Turno 4: Falla por Choque de Agenda (Mismo Doc, misma fecha y hora que Turno 1)
+        Turno turnoChoque = new Turno();
+        turnoChoque.setPaciente(p1);
+        turnoChoque.setOdontologo(o1);
+        turnoChoque.setFecha(LocalDate.of(2026, 5, 10)); // Misma fecha que el turno 1
+        turnoChoque.setHora(LocalTime.of(10, 0));        // Misma hora que el turno 1
+
+        System.out.println("\n> Intentando registrar Turno 4 (Choque de horarios)...");
+        turnoService.registrar(turnoChoque); // Debería dar ERROR
+
+        System.out.println("\n=== TEST FINALIZADO ===");
     }
 }

@@ -1,63 +1,59 @@
 package main;
 
-import entity.Especialidad;
-import entity.EstadoTurno;
-import entity.Odontologo;
 import entity.Paciente;
-import entity.Turno;
+import repository.PacienteRepository;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.util.Optional;
 
 public class Main {
 
     public static void main(String[] args) {
+        System.out.println("=== INICIANDO PRUEBA DE LA CAPA REPOSITORY ===\n");
 
-        System.out.println("=== INICIANDO PRUEBA FINAL DE LA CAPA ENTITY ===\n");
+        // 1. Instanciamos nuestra "Base de Datos"
+        PacienteRepository pacienteRepo = new PacienteRepository();
 
-        // 1. Creación del Odontólogo
-        Odontologo odontologo = new Odontologo(
-                1L,
-                "Ana",
-                "López",
-                "32111222",
-                "ana.lopez@clinica.com", // NUEVO
-                "1155556666",            // NUEVO
-                "MP-9001",
-                Especialidad.ENDODONCIA
-        );
+        // 2. CREATE (Crear): Preparamos dos pacientes SIN ID (el repo debe asignarlo)
+        Paciente p1 = new Paciente(null, "Juan", "Pérez", "11111111", "juan@mail.com", "1234", LocalDate.now(), "Calle 1", "100", "Quilmes", "BsAs");
+        Paciente p2 = new Paciente(null, "María", "Gómez", "22222222", "maria@mail.com", "5678", LocalDate.now(), "Calle 2", "200", "Quilmes", "BsAs");
 
-        // 2. Creación del Paciente
-        Paciente paciente = new Paciente(
-                1L,
-                "Martín",
-                "Gómez",
-                "41222333",
-                "martin.gomez@gmail.com", // NUEVO
-                "1144447777",             // NUEVO
-                LocalDate.now(),
-                "Av. Rivadavia",
-                "450",
-                "Quilmes",
-                "Buenos Aires"
-        );
+        System.out.println("Guardando pacientes...");
+        pacienteRepo.guardar(p1);
+        pacienteRepo.guardar(p2);
 
-        System.out.println("\n✅ Paciente instanciado (con Domicilio integrado):");
-        System.out.println(paciente);
+        // Comprobamos que el repositorio les asignó IDs automáticamente (1 y 2)
+        System.out.println("✅ Paciente 1 guardado con ID: " + p1.getId());
+        System.out.println("✅ Paciente 2 guardado con ID: " + p2.getId());
 
-        // 3. Creación del Turno (Prueba de Asociación y consola limpia)
-        Turno turno = new Turno(
-                1L,
-                paciente,
-                odontologo,
-                LocalDate.of(2026, 5, 25),
-                LocalTime.of(16, 45),
-                EstadoTurno.PENDIENTE
-        );
-        System.out.println("\n✅ Turno creado (El núcleo de nuestra clínica):");
-        // Aquí veremos en acción el nuevo toString() resumido que diseñamos
-        System.out.println(turno);
+        // 3. READ (Leer todos): Comprobamos el tamaño de la lista
+        System.out.println("\nConsultando todos los pacientes...");
+        System.out.println("✅ Total de pacientes en la clínica: " + pacienteRepo.buscarTodos().size());
 
-        System.out.println("\n=== LA ARQUITECTURA DE DOMINIO FUNCIONA PERFECTAMENTE ===");
+        // 4. READ (Leer por ID con Optional): Buscamos el ID 1
+        System.out.println("\nBuscando paciente con ID 1...");
+        Optional<Paciente> pacienteEncontrado = pacienteRepo.buscarPorId(1L);
+
+        if (pacienteEncontrado.isPresent()) {
+            System.out.println("✅ Encontrado: " + pacienteEncontrado.get().getNombre() + " " + pacienteEncontrado.get().getApellido());
+        } else {
+            System.out.println("❌ No se encontró el paciente.");
+        }
+
+        // 5. DELETE (Eliminar): Borramos al paciente 1
+        System.out.println("\nEliminando paciente con ID 1...");
+        pacienteRepo.eliminar(1L);
+
+        // 6. Verificamos que se haya eliminado
+        System.out.println("Consultando total de pacientes nuevamente...");
+        System.out.println("✅ Total de pacientes tras borrar: " + pacienteRepo.buscarTodos().size());
+
+        // Intentamos buscar el ID 1 otra vez para ver cómo actúa el Optional vacío
+        Optional<Paciente> busquedaFallida = pacienteRepo.buscarPorId(1L);
+        if (busquedaFallida.isEmpty()) {
+            System.out.println("✅ Búsqueda correcta: El paciente 1 ya no existe en el sistema.");
+        }
+
+        System.out.println("\n=== PRUEBA DEL REPOSITORIO FINALIZADA CON ÉXITO ===");
     }
 }

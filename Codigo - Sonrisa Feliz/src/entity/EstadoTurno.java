@@ -1,8 +1,8 @@
-package modelo;
+package entity;
 
 public enum EstadoTurno {
     PENDIENTE,
-    CONFIRMADO,
+    COMPLETADO,
     CANCELADO,
-    COMPLETADO
+    AUSENTE
 }

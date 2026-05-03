@@ -29,6 +29,6 @@ public class Paciente extends Persona {
     @Override
     public String toString() {
         return "Paciente [ID=" + getId() + ", Nombre=" + getNombre() + " " + getApellido() +
-                ", DNI=" + getDni() + ", Domicilio=" + domicilio.toString() + "]";
+                ", DNI=" + getDni() + "Email" +getEmail() + "Teléfono" + getTelefono() + ", Domicilio=" + domicilio.toString() + "]";
     }
 }

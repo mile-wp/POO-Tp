@@ -81,6 +81,8 @@ public class Menu {
             p.setNombre(nom);
             p.setApellido(ape);
             p.setDni(dni);
+            p.setEmail(email);
+            p.setTelefono(tel);
 
             //CHEQUEAR POR QUÉ DA ERROR
             //p.setEmail(email);

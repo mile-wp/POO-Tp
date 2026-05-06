@@ -106,22 +106,22 @@ public class OdontologoService implements IService<Odontologo> {
 
     public void validarTelefono(String telefono) {
         if (telefono == null || telefono.trim().isEmpty()) {
-            throw new IllegalArgumentException("El teléfono es obligatorio");
+            throw new IllegalArgumentException("El número de teléfono es obligatorio");
         }
 
-        // Solo números
-        if (!telefono.matches("\\d+")) {
-            throw new IllegalArgumentException("El teléfono debe contener solo números");
+        else if (!telefono.matches("\\d+")) {
+            throw new IllegalArgumentException("El número de teléfono debe contener solo números");
         }
 
-        // Validar formato argentino (10 dígitos, ej: 11xxxxxxxx)
-        if (telefono.length() != 10) {
-            throw new IllegalArgumentException("El teléfono debe contener 10 dígitos (ej: 11xxxxxxxx)");
+        else if (telefono.length() != 10) {
+            throw new IllegalArgumentException("El número de teléfono debe contener 10 dígitos (ej: 11xxxxxxxx)");
         }
 
-        // Validar que empiece con 11
-        if (!telefono.startsWith("11")) {
-            throw new IllegalArgumentException("El teléfono debe comenzar con 11");
+        else if (!telefono.startsWith("11")) {
+            throw new IllegalArgumentException("El número de teléfono debe comenzar con 11");
+        }
+        else {
+            System.out.println("El número de telefono es válido");
         }
     }
 

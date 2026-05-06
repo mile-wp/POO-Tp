@@ -15,7 +15,7 @@ public class Menu {
         System.out.println("1. Gestionar Pacientes");
         System.out.println("2. Gestionar Odontólogos");
         System.out.println("3. Gestión de Turnos");
-        System.out.println("0. Salir");
+        System.out.println("4. Salir");
         System.out.print("Seleccione una opción: ");
 
         int opcion = scanner.nextInt();
@@ -25,7 +25,7 @@ public class Menu {
     }
 
     private void procesarOpcionPrincipal(int opcion) {
-        if (opcion == 0) {
+        if (opcion == 4) {
             System.out.println("Cerrando el sistema...");
             return; // Finaliza la ejecución
         }
@@ -60,9 +60,9 @@ public class Menu {
         if (op == 1) {
             System.out.print("Nombre: "); String nom = scanner.nextLine();
             System.out.print("Apellido: "); String ape = scanner.nextLine();
-            System.out.print("DNI: "); String dni = scanner.nextLine();
-            System.out.println("Email: "); String email = scanner.nextLine();
-            System.out.println("Teléfono: "); String tel = scanner.nextLine();
+            System.out.print("Ingrese el DNI (solo números y sin puntos): "); String dni = scanner.nextLine();
+            System.out.println("Ingrese el email: "); String email = scanner.nextLine();
+            System.out.println("Ingrese número de teléfono (con formato argentino, debe comenzar con <11>): "); String tel = scanner.nextLine();
 
 
             //Pide datos de domicilio
@@ -111,7 +111,7 @@ public class Menu {
         System.out.println("\n--- GESTIÓN DE ODONTÓLOGOS ---");
         System.out.println("1. Registrar Odontólogo");
         System.out.println("2. Listar Todos");
-        System.out.println("3. Volver");
+        System.out.println("3. Volver al inicio");
         System.out.print("Seleccione: ");
 
         int op = scanner.nextInt();
@@ -120,7 +120,7 @@ public class Menu {
         if (op == 1) {
             System.out.print("Nombre: "); String nom = scanner.nextLine();
             System.out.print("Apellido: "); String ape = scanner.nextLine();
-            System.out.print("Matrícula: "); String mat = scanner.nextLine();
+            System.out.print("Matrícula (debe contener entre 4 y 10 caracteres): "); String mat = scanner.nextLine();
 
             // --- SELECCIÓN DE ESPECIALIDAD ---
             System.out.println("Seleccione Especialidad:");

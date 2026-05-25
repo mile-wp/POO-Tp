@@ -21,9 +21,17 @@ public class OdontologoService implements IService<Odontologo> {
     @Override
     public Odontologo registrar(Odontologo odontologo) {
 
+        String validarNombreApellido = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,20}$";
+        String validarMatricula = "^\\d{3}-[a-zA-Z]{3}$";
+
         // 1. Validación: El nombre no puede estar vacío
         if (odontologo.getNombre() == null || odontologo.getNombre().trim().isEmpty()) {
             System.out.println("Error: El nombre del odontólogo es obligatorio.");
+            return null;
+        }
+
+        if (!odontologo.getNombre().matches(validarNombreApellido)) {
+            System.out.println("Error: El nombre debe tener entre 3 y 20 letras y no contener números.");
             return null;
         }
 
@@ -33,14 +41,25 @@ public class OdontologoService implements IService<Odontologo> {
             return null;
         }
 
+        if (!odontologo.getApellido().matches(validarNombreApellido)) {
+            System.out.println("Error: El apellido debe tener entre 3 y 20 letras y no contener números.");
+            return null;
+        }
+
         // 3. Validación: La matrícula no puede estar vacía
         if (odontologo.getMatricula() == null || odontologo.getMatricula().trim().isEmpty()) {
             System.out.println("Error: El número de matrícula es obligatorio.");
             return null;
         }
 
+        if (!odontologo.getMatricula().matches(validarMatricula)) {
+            System.out.println("Error: La matrícula debe tener el formato [123-ABC].");
+            return null;
+        }
+
         // 4. Validación de Lógica de Negocio: Matrícula Única
         List<Odontologo> odontologosExistentes = odontologoRepository.buscarTodos();
+
         for (Odontologo o : odontologosExistentes) {
             if (o.getMatricula().equalsIgnoreCase(odontologo.getMatricula())) {
                 System.out.println("Error: Ya existe un odontólogo registrado con la matrícula: " + odontologo.getMatricula());

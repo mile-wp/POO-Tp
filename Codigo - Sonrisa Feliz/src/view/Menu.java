@@ -14,14 +14,21 @@ public class Menu {
     // método que inicializa el menú
     public void iniciar() {
         System.out.println("\n=== CLINICA SONRISA FELIZ ===");
-        System.out.println("1. Gestionar Pacientes");
-        System.out.println("2. Gestionar Odontólogos");
+        System.out.println("1. Gestión de Pacientes");
+        System.out.println("2. Gestión de Odontólogos");
         System.out.println("3. Gestión de Turnos");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
 
-        int opcion = scanner.nextInt();
-        scanner.nextLine(); // Limpiar buffer
+        int opcion;
+
+        try {
+            opcion = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Debe ingresar un número válido.");
+            iniciar();
+            return;
+        }
 
         procesarOpcionPrincipal(opcion);
     }
@@ -51,8 +58,15 @@ public class Menu {
         System.out.println("3. Volver al inicio");
         System.out.print("Seleccione: ");
 
-        int op = scanner.nextInt();
-        scanner.nextLine();
+        int op;
+
+        try {
+            op = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Debe ingresar un número.");
+            menuPacientes();
+            return;
+        }
 
         if (op == 1) {
             System.out.print("Nombre: "); String nom = scanner.nextLine();
@@ -80,8 +94,16 @@ public class Menu {
             System.out.println("1. Con Obra Social");
             System.out.println("2. Particular");
             System.out.print("Seleccione: ");
-            int tipoPac = scanner.nextInt();
-            scanner.nextLine();
+
+            int tipoPac;
+
+            try {
+                tipoPac = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Debe ingresar una opción válida.");
+                menuPacientes();
+                return;
+            }
 
             // Declaramos la variable de la clase abstracta (Polimorfismo)
             Paciente p;
@@ -113,8 +135,12 @@ public class Menu {
             p.setFechaIngreso(LocalDate.now()); // Seteamos la fecha de hoy automáticamente
             p.setDomicilio(dom);
 
-            controller.registrarPaciente(p);
-            System.out.println("Paciente registrado con éxito.");
+            try {
+                controller.registrarPaciente(p);
+                System.out.println("Paciente registrado con éxito.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
             menuPacientes();
 
         } else if (op == 2) {
@@ -133,8 +159,15 @@ public class Menu {
         System.out.println("3. Volver");
         System.out.print("Seleccione: ");
 
-        int op = scanner.nextInt();
-        scanner.nextLine();
+        int op;
+
+        try {
+            op = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Debe ingresar un número válido.");
+            iniciar();
+            return;
+        }
 
         if (op == 1) {
             System.out.print("Nombre: "); String nom = scanner.nextLine();
@@ -147,12 +180,29 @@ public class Menu {
             System.out.println("2. ENDODONCIA");
             System.out.println("3. EXTRACCIONES");
             System.out.print("Opción: ");
-            int espOp = scanner.nextInt();
-            scanner.nextLine();
+
+            int espOp;
+
+            try {
+                espOp = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Debe ingresar una opción válida.");
+                menuOdontologos();
+                return;
+            }
 
             System.out.print("Ingrese el recargo de especialidad (ej: 1.5): ");
             String inputRecargo = scanner.nextLine(); // Leemos como texto
-            double recargo = Double.parseDouble(inputRecargo.replace(",", "."));
+
+            double recargo;
+
+            try {
+                recargo = Double.parseDouble(inputRecargo.replace(",", "."));
+            } catch (NumberFormatException e) {
+                System.out.println("Error: El recargo debe ser numérico.");
+                menuOdontologos();
+                return;
+            }
 
             // Declaramos la variable de la clase abstracta
             Odontologo o;
@@ -188,8 +238,13 @@ public class Menu {
             o.setDni(dni);
             o.setMatricula(mat);
 
-            controller.registrarOdontologo(o);
-            System.out.println("Odontólogo registrado con éxito.");
+            try {
+                controller.registrarOdontologo(o);
+                System.out.println("Odontólogo registrado con éxito.");
+
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
             menuOdontologos();
 
         } else if (op == 2) {
@@ -208,12 +263,29 @@ public class Menu {
         System.out.println("3. Volver al Inicio");
         System.out.print("Seleccione: ");
 
-        int op = scanner.nextInt();
-        scanner.nextLine();
+        int op;
+
+        try {
+            op = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Debe ingresar un número.");
+            menuOdontologos();
+            return;
+        }
 
         if (op == 1) {
             System.out.print("Ingrese ID del Paciente: ");
-            Long idPac = scanner.nextLong();
+
+            Long idPac;
+
+            try {
+                idPac = Long.parseLong(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Error: El ID del paciente debe ser numérico.");
+                menuTurnos();
+                return;
+            }
+
             var pacienteOpt = controller.buscarPacienteId(idPac);
 
             if (pacienteOpt.isEmpty()) {
@@ -223,7 +295,17 @@ public class Menu {
             }
 
             System.out.print("Ingrese ID del Odontólogo: ");
-            Long idOdonto = scanner.nextLong();
+
+            Long idOdonto;
+
+            try {
+                idOdonto = Long.parseLong(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Error: El ID del odontólogo debe ser numérico.");
+                menuTurnos();
+                return;
+            }
+
             var odontoOpt = controller.buscarOdontologoId(idOdonto);
 
             if (odontoOpt.isEmpty()) {

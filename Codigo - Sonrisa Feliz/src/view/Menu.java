@@ -2,14 +2,16 @@ package view;
 
 import controller.ClinicaController;
 import entity.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Scanner;
 
-//Agregamos scanner para ingresar datos desde teclado
+// Agregamos scanner para ingresar datos desde teclado
 public class Menu {
     private final ClinicaController controller = new ClinicaController();
     private final Scanner scanner = new Scanner(System.in);
 
-    //método que inicializa el menú
+    // método que inicializa el menú
     public void iniciar() {
         System.out.println("\n=== CLINICA SONRISA FELIZ ===");
         System.out.println("1. Gestionar Pacientes");
@@ -41,11 +43,7 @@ public class Menu {
         }
     }
 
-
-    //Hacemos un menú por cada clase para no mezclar los datos
-
-    //Menú para pacientes
-
+    // --- MENÚ PARA PACIENTES ---
     private void menuPacientes() {
         System.out.println("\n--- GESTIÓN DE PACIENTES ---");
         System.out.println("1. Registrar Paciente");
@@ -56,59 +54,78 @@ public class Menu {
         int op = scanner.nextInt();
         scanner.nextLine();
 
-        //Registro un paciente
         if (op == 1) {
             System.out.print("Nombre: "); String nom = scanner.nextLine();
             System.out.print("Apellido: "); String ape = scanner.nextLine();
             System.out.print("DNI: "); String dni = scanner.nextLine();
-            System.out.println("Email: "); String email = scanner.nextLine();
-            System.out.println("Teléfono: "); String tel = scanner.nextLine();
+            System.out.print("Email: "); String email = scanner.nextLine();
+            System.out.print("Teléfono: "); String tel = scanner.nextLine();
 
-
-            //Pide datos de domicilio
-
+            // Pide datos de domicilio
             System.out.println("--- DATOS DEL DOMICILIO ---");
             System.out.print("Calle: "); String calle = scanner.nextLine();
             System.out.print("Altura/Número: "); String altura = scanner.nextLine();
             System.out.print("Localidad: "); String localidad = scanner.nextLine();
             System.out.print("Provincia: "); String provincia = scanner.nextLine();
 
-            // 1. Crear el objeto Domicilio primero
-            Domicilio dom = new Domicilio(calle, altura, localidad, provincia);
+            // 1. Crear el objeto Domicilio
+            Domicilio dom = new Domicilio();
+            dom.setCalle(calle);
+            dom.setAltura(altura);
+            dom.setLocalidad(localidad);
+            dom.setProvincia(provincia);
 
-            // 2. Crear el Paciente y le asigna los datos
-            Paciente p = new Paciente();
+            // 2. SELECCIÓN DE TIPO DE PACIENTE (El gran cambio)
+            System.out.println("--- COBERTURA MÉDICA ---");
+            System.out.println("1. Con Obra Social");
+            System.out.println("2. Particular");
+            System.out.print("Seleccione: ");
+            int tipoPac = scanner.nextInt();
+            scanner.nextLine();
+
+            // Declaramos la variable de la clase abstracta (Polimorfismo)
+            Paciente p;
+
+            if (tipoPac == 1) {
+                System.out.print("Nombre de la Obra Social: "); String obs = scanner.nextLine();
+                System.out.print("Número de Afiliado: "); String numAfi = scanner.nextLine();
+
+                PacienteObraSocial pOS = new PacienteObraSocial();
+                pOS.setNombreObraSocial(obs);
+                pOS.setNumAfiliado(numAfi);
+                p = pOS; // Asignamos el hijo a la variable padre
+            } else {
+                System.out.print("Tarifa Base del Paciente (ej: 5000.50): ");
+                String inputTarifa = scanner.nextLine();
+                double tarifa = Double.parseDouble(inputTarifa.replace(",", "."));
+
+                PacienteParticular pP = new PacienteParticular();
+                pP.setTarifaBase(tarifa);
+                p = pP; // Asignamos el hijo a la variable padre
+            }
+
+            // 3. Setear los datos comunes de la clase abstracta Persona/Paciente
             p.setNombre(nom);
             p.setApellido(ape);
             p.setDni(dni);
-            p.setEmail(email);
-            p.setTelefono(tel);
-
-            //CHEQUEAR POR QUÉ DA ERROR
-            //p.setEmail(email);
-            //p.setTelefono(tele);
-
+            p.setEmail(email);    // Ya no debería dar error si está en la Entity
+            p.setTelefono(tel);   // Ya no debería dar error si está en la Entity
+            p.setFechaIngreso(LocalDate.now()); // Seteamos la fecha de hoy automáticamente
             p.setDomicilio(dom);
 
-
             controller.registrarPaciente(p);
+            System.out.println("Paciente registrado con éxito.");
             menuPacientes();
 
-
-
-            //Lista todos los pacientes
         } else if (op == 2) {
             controller.listarPacientes().forEach(System.out::println);
             menuPacientes();
-
-            //Vuelve al inicio
         } else {
-            iniciar(); // Regresa al menú raíz
+            iniciar();
         }
     }
 
-    //Menú para odontólogos
-
+    // --- MENÚ PARA ODONTÓLOGOS ---
     private void menuOdontologos() {
         System.out.println("\n--- GESTIÓN DE ODONTÓLOGOS ---");
         System.out.println("1. Registrar Odontólogo");
@@ -122,40 +139,59 @@ public class Menu {
         if (op == 1) {
             System.out.print("Nombre: "); String nom = scanner.nextLine();
             System.out.print("Apellido: "); String ape = scanner.nextLine();
+            System.out.print("DNI: "); String dni = scanner.nextLine();
             System.out.print("Matrícula: "); String mat = scanner.nextLine();
 
-            // --- SELECCIÓN DE ESPECIALIDAD ---
-            System.out.println("Seleccione Especialidad:");
+            System.out.println("--- SELECCIÓN DE ESPECIALIDAD ---");
             System.out.println("1. ORTODONCIA");
             System.out.println("2. ENDODONCIA");
-            System.out.println("3. IMPLANTOLOGIA");
-            System.out.println("4. EXTRACCIONES");
+            System.out.println("3. EXTRACCIONES");
             System.out.print("Opción: ");
             int espOp = scanner.nextInt();
             scanner.nextLine();
 
-            Especialidad especialidadSeleccionada = switch (espOp) {
-                case 1 -> Especialidad.ORTODONCIA;
-                case 2 -> Especialidad.ENDODONCIA;
-                case 3 -> Especialidad.IMPLANTOLOGIA;
-                case 4 -> Especialidad.EXTRACCIONES;
+            System.out.print("Ingrese el recargo de especialidad (ej: 1.5): ");
+            String inputRecargo = scanner.nextLine(); // Leemos como texto
+            double recargo = Double.parseDouble(inputRecargo.replace(",", "."));
+
+            // Declaramos la variable de la clase abstracta
+            Odontologo o;
+
+            // Instanciamos la clase concreta elegida
+            switch (espOp) {
+                case 1 -> {
+                    OdOrtodoncia od = new OdOrtodoncia();
+                    od.setRecargoEspecialidad(recargo);
+                    o = od;
+                }
+                case 2 -> {
+                    OdEndodoncia od = new OdEndodoncia();
+                    od.setRecargoEspecialidad(recargo);
+                    o = od;
+                }
+                case 3 -> {
+                    OdExtraccion od = new OdExtraccion();
+                    od.setRecargoEspecialidad(recargo);
+                    o = od;
+                }
                 default -> {
                     System.out.println("Opción inválida, se asignará ORTODONCIA por defecto.");
-                    //Yield lo usamos porque al ser un enum retorna más de un posible valor
-                    yield Especialidad.ORTODONCIA;
+                    OdOrtodoncia od = new OdOrtodoncia();
+                    od.setRecargoEspecialidad(recargo);
+                    o = od;
                 }
-            };
+            }
 
-            // Crear objeto y asignar datos
-            Odontologo o = new Odontologo();
+            // Seteamos los datos comunes heredados
             o.setNombre(nom);
             o.setApellido(ape);
+            o.setDni(dni);
             o.setMatricula(mat);
-            o.setEspecialidad(especialidadSeleccionada); // Asignación de la especialidad
 
             controller.registrarOdontologo(o);
             System.out.println("Odontólogo registrado con éxito.");
             menuOdontologos();
+
         } else if (op == 2) {
             controller.listarOdontologos().forEach(System.out::println);
             menuOdontologos();
@@ -164,8 +200,7 @@ public class Menu {
         }
     }
 
-
-    //Menú para turnos
+    // --- MENÚ PARA TURNOS ---
     private void menuTurnos() {
         System.out.println("\n--- GESTIÓN DE TURNOS ---");
         System.out.println("1. Reservar Nuevo Turno");
@@ -177,7 +212,6 @@ public class Menu {
         scanner.nextLine();
 
         if (op == 1) {
-            // 1. Selección de Paciente
             System.out.print("Ingrese ID del Paciente: ");
             Long idPac = scanner.nextLong();
             var pacienteOpt = controller.buscarPacienteId(idPac);
@@ -188,7 +222,6 @@ public class Menu {
                 return;
             }
 
-            // 2. Selección de Odontólogo
             System.out.print("Ingrese ID del Odontólogo: ");
             Long idOdonto = scanner.nextLong();
             var odontoOpt = controller.buscarOdontologoId(idOdonto);
@@ -199,21 +232,21 @@ public class Menu {
                 return;
             }
 
-            // 3. Ingreso de Fecha y Hora
-            System.out.println("Ingrese la fecha (Año-Mes-Día, ej: 2026-05-15): ");
+            System.out.print("Ingrese la fecha (Año-Mes-Día, ej: 2026-05-15): ");
             String fechaStr = scanner.next();
-            System.out.println("Ingrese la hora (Hora:Minutos, ej: 14:30): ");
+            System.out.print("Ingrese la hora (Hora:Minutos, ej: 14:30): ");
             String horaStr = scanner.next();
 
             try {
                 Turno nuevoTurno = new Turno();
                 nuevoTurno.setPaciente(pacienteOpt.get());
                 nuevoTurno.setOdontologo(odontoOpt.get());
-                nuevoTurno.setFecha(java.time.LocalDate.parse(fechaStr));
-                nuevoTurno.setHora(java.time.LocalTime.parse(horaStr));
-                nuevoTurno.setEstado(EstadoTurno.PENDIENTE); // Estado inicial
+                nuevoTurno.setFecha(LocalDate.parse(fechaStr));
+                nuevoTurno.setHora(LocalTime.parse(horaStr));
 
-                // 4. Intento de registro a través del Controller
+                // NOTA: Si aún no creaste el Enum EstadoTurno en la entidad, comentalo temporalmente.
+                // nuevoTurno.setEstado(EstadoTurno.PENDIENTE);
+
                 Turno registrado = controller.agendarTurno(nuevoTurno);
 
                 if (registrado != null) {

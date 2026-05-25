@@ -1,11 +1,17 @@
 package service;
 
 import entity.Odontologo;
+import entity.OdOrtodoncia;
+import entity.OdEndodoncia;
+import entity.OdExtraccion;
 import entity.Paciente;
+import entity.PacienteParticular;
+import entity.PacienteObraSocial;
 import entity.Turno;
 import entity.EstadoTurno;
 import repository.IRepository;
 import repository.TurnoRepository;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -94,14 +100,10 @@ public class TurnoService implements IService<Turno> {
         List<Turno> turnosAgendados = turnoRepository.buscarTodos();
         for (Turno t : turnosAgendados) {
 
-            // 1. Verificamos si es el mismo odontólogo y es el mismo día
             if (t.getOdontologo().getId().equals(turno.getOdontologo().getId()) && t.getFecha().equals(turno.getFecha())) {
 
-                // 2. Calculamos la diferencia de tiempo entre ambos turnos
-                // Usamos .abs() (valor absoluto) para que no importe si el turno nuevo es antes o después del existente
                 long diferenciaMinutos = java.time.Duration.between(t.getHora(), turno.getHora()).abs().toMinutes();
 
-                // 3. Si hay menos de 30 minutos de diferencia, rechazamos el turno
                 if (diferenciaMinutos < 30) {
                     System.out.println("Error: Choque de agenda. El odontólogo ya tiene un turno a las "
                             + t.getHora() + ". Debe haber una diferencia mínima de 30 minutos.");
@@ -111,10 +113,49 @@ public class TurnoService implements IService<Turno> {
         }
 
         // ==========================================
+        // REGLA 5: CÁLCULO DE FACTURACIÓN (Polimorfismo)
+        // ==========================================
+        Paciente pacienteReal = pacienteExistente.get();
+        Odontologo odontologoReal = odontologoExistente.get();
+
+        System.out.println("\n--- DETALLE DE FACTURACIÓN ---");
+
+        if (pacienteReal instanceof PacienteParticular) {
+            PacienteParticular pP = (PacienteParticular) pacienteReal;
+            double costoFinal = pP.getTarifaBase();
+
+            if (odontologoReal instanceof OdOrtodoncia) {
+                costoFinal *= ((OdOrtodoncia) odontologoReal).getRecargoEspecialidad();
+            } else if (odontologoReal instanceof OdEndodoncia) {
+                costoFinal *= ((OdEndodoncia) odontologoReal).getRecargoEspecialidad();
+            } else if (odontologoReal instanceof OdExtraccion) {
+                costoFinal *= ((OdExtraccion) odontologoReal).getRecargoEspecialidad();
+            }
+
+            // ¡NUEVO! Guardamos el valor calculado en el objeto
+            turno.setMontoFacturacion(costoFinal);
+
+            System.out.println("Tipo de cobertura: PACIENTE PARTICULAR");
+            System.out.println("Monto a abonar en mostrador: $" + costoFinal);
+
+        } else if (pacienteReal instanceof PacienteObraSocial) {
+            PacienteObraSocial pOS = (PacienteObraSocial) pacienteReal;
+
+            // ¡NUEVO! Guardamos 0.0 porque está cubierto
+            turno.setMontoFacturacion(0.0);
+
+            System.out.println("Tipo de cobertura: OBRA SOCIAL");
+            System.out.println("Entidad a facturar: " + pOS.getNombreObraSocial());
+            System.out.println("Monto a abonar en mostrador: $0.0 (Cubierto)");
+        }
+
+        System.out.println("------------------------------\n");
+
+        // ==========================================
         // ÉXITO: GUARDAMOS EL TURNO
         // ==========================================
-        turno.setPaciente(pacienteExistente.get());
-        turno.setOdontologo(odontologoExistente.get());
+        turno.setPaciente(pacienteReal);
+        turno.setOdontologo(odontologoReal);
         turno.setEstado(EstadoTurno.PENDIENTE);
 
         System.out.println("✅ Turno validado y agendado exitosamente para el " + turno.getFecha() + " a las " + turno.getHora());

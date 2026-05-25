@@ -39,6 +39,6 @@ public abstract class Odontologo {
 
     @Override
     public String toString() {
-        return nombre + " " + apellido + " - Matrícula: " + matricula;
+        return "[ID: " + id + "] " + nombre + " " + apellido + " - Matrícula: " + matricula;
     }
 }

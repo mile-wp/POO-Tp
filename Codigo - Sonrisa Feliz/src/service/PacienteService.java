@@ -1,5 +1,7 @@
 package service;
 
+import entity.PacienteObraSocial;
+import entity.PacienteParticular;
 import entity.Paciente;
 import repository.IRepository;
 import repository.PacienteRepository;
@@ -45,8 +47,32 @@ public class PacienteService implements IService<Paciente> {
             }
         }
 
-        // Si pasó todos los "if", tiene luz verde para guardarse
-        System.out.println("Validaciones superadas. Registrando paciente...");
+        // =========================================================================
+        // NUEVAS VALIDACIONES DE SUBCLASE (INTEGRIDAD DE DATOS ESPECÍFICOS)
+        // =========================================================================
+
+        if (paciente instanceof PacienteObraSocial) {
+            PacienteObraSocial os = (PacienteObraSocial) paciente;
+            if (os.getNombreObraSocial() == null || os.getNombreObraSocial().trim().isEmpty()) {
+                System.out.println("Error: El nombre de la obra social es obligatorio para este tipo de cliente.");
+                return null;
+            }
+            if (os.getNumAfiliado() == null || os.getNumAfiliado().trim().isEmpty()) {
+                System.out.println("Error: El número de afiliado es obligatorio para este tipo de cliente.");
+                return null;
+            }
+        }
+
+        else if (paciente instanceof PacienteParticular) {
+            PacienteParticular particular = (PacienteParticular) paciente;
+            if (particular.getTarifaBase() == null || particular.getTarifaBase() <= 0) {
+                System.out.println("Error: La tarifa base para un cliente particular debe ser un monto mayor a 0.");
+                return null;
+            }
+        }
+
+        // Si pasó todos los filtros generales y específicos, se guarda en el repositorio
+        System.out.println("Validaciones superadas con éxito. Registrando paciente...");
         return pacienteRepository.guardar(paciente);
     }
 
@@ -57,7 +83,6 @@ public class PacienteService implements IService<Paciente> {
 
     @Override
     public void eliminarPorId(Long id) {
-        // Podríamos validar si existe antes de eliminar
         Optional<Paciente> existente = pacienteRepository.buscarPorId(id);
         if (existente.isEmpty()) {
             System.out.println("Error: No se puede eliminar. No existe paciente con ID: " + id);
@@ -69,7 +94,6 @@ public class PacienteService implements IService<Paciente> {
 
     @Override
     public Paciente actualizar(Paciente paciente) {
-        // Validamos que el paciente que nos pasan tenga un ID válido
         if (paciente.getId() == null) {
             System.out.println("Error: Para actualizar, el paciente debe tener un ID asignado.");
             return null;

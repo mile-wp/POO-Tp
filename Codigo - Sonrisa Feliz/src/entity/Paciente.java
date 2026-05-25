@@ -77,7 +77,6 @@ public abstract class Paciente {
 
     @Override
     public String toString() {
-        return "Paciente [ID= " + getId() + ", Nombre= " + getNombre() + " " + getApellido() +
-                ", DNI= " + getDni() + ", Email= " + getEmail() + " "+ ", Teléfono= " + getTelefono() + " " + ", Domicilio= " + domicilio.toString() + "]";
+        return "[ID: " + id + "] " + nombre + " " + apellido + " - DNI: " + dni;
     }
 }

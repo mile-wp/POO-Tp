@@ -1,60 +1,52 @@
 package repository;
 
 import entity.Odontologo;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class OdontologoRepository implements IRepository<Odontologo> {
-
-    // 1. Base de datos en memoria para odontólogos
-    private List<Odontologo> tablaOdontologos;
-
-    // 2. Generador de IDs
-    private Long generadorId;
-
-    public OdontologoRepository() {
-        this.tablaOdontologos = new ArrayList<>();
-        this.generadorId = 1L;
-    }
+    // Definición del HashMap para almacenamiento en memoria
+    private Map<Long, Odontologo> tablaOdontologos = new HashMap<>();
+    
+    // Generador de IDs secuenciales
+    private Long generadorId = 1L;
 
     @Override
     public Odontologo guardar(Odontologo odontologo) {
+        // Asignamos el ID autogenerado antes de guardar
         odontologo.setId(generadorId);
+        tablaOdontologos.put(generadorId, odontologo);
         generadorId++;
-        tablaOdontologos.add(odontologo);
         return odontologo;
     }
 
     @Override
     public Optional<Odontologo> buscarPorId(Long id) {
-        for (Odontologo odontologo : tablaOdontologos) {
-            if (odontologo.getId().equals(id)) {
-                return Optional.of(odontologo);
-            }
-        }
-        return Optional.empty();
+        // Acceso directo por clave (ID) en tiempo constante O(1)
+        return Optional.ofNullable(tablaOdontologos.get(id));
     }
 
     @Override
     public List<Odontologo> buscarTodos() {
-        // Retornamos una copia para proteger la lista original
-        return new ArrayList<>(tablaOdontologos);
+        // Retornamos una copia de los valores del mapa como lista
+        return new ArrayList<>(tablaOdontologos.values());
     }
 
     @Override
     public void eliminar(Long id) {
-        tablaOdontologos.removeIf(odontologo -> odontologo.getId().equals(id));
+        // Eliminación directa por clave[cite: 2]
+        tablaOdontologos.remove(id);
     }
 
     @Override
     public Odontologo actualizar(Odontologo odontologoModificado) {
-        for (int i = 0; i < tablaOdontologos.size(); i++) {
-            if (tablaOdontologos.get(i).getId().equals(odontologoModificado.getId())) {
-                tablaOdontologos.set(i, odontologoModificado);
-                return odontologoModificado;
-            }
+        // Verificamos existencia antes de actualizar para cumplir con el patrón Expert[cite: 2]
+        if (tablaOdontologos.containsKey(odontologoModificado.getId())) {
+            tablaOdontologos.put(odontologoModificado.getId(), odontologoModificado);
+            return odontologoModificado;
         }
         return null;
     }

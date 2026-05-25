@@ -2,58 +2,46 @@ package repository;
 
 import entity.Paciente;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class PacienteRepository implements IRepository<Paciente> {
-
-    // 1. Base de datos en memoria para pacientes
-    private List<Paciente> tablaPacientes;
-
-    // 2. Generador de IDs
-    private Long generadorId;
-
-    public PacienteRepository() {
-        this.tablaPacientes = new ArrayList<>();
-        this.generadorId = 1L;
-    }
+    // Implementación usando HashMap como pide el documento
+    private Map<Long, Paciente> tablaPacientes = new HashMap<>();
+    private Long generadorId = 1L;
 
     @Override
     public Paciente guardar(Paciente paciente) {
         paciente.setId(generadorId);
+        tablaPacientes.put(generadorId, paciente); // El ID es la clave
         generadorId++;
-        tablaPacientes.add(paciente);
         return paciente;
     }
 
     @Override
     public Optional<Paciente> buscarPorId(Long id) {
-        for (Paciente paciente : tablaPacientes) {
-            if (paciente.getId().equals(id)) {
-                return Optional.of(paciente);
-            }
-        }
-        return Optional.empty();
+        // La búsqueda en HashMap es directa y eficiente
+        return Optional.ofNullable(tablaPacientes.get(id));
     }
 
     @Override
     public List<Paciente> buscarTodos() {
-        // Retornamos una copia para proteger la lista original
-        return new ArrayList<>(tablaPacientes);
+        // Convertimos los valores del mapa a una lista para la UI
+        return new ArrayList<>(tablaPacientes.values());
     }
 
     @Override
     public void eliminar(Long id) {
-        tablaPacientes.removeIf(paciente -> paciente.getId().equals(id));
+        tablaPacientes.remove(id);
     }
 
     @Override
     public Paciente actualizar(Paciente pacienteModificado) {
-        for (int i = 0; i < tablaPacientes.size(); i++) {
-            if (tablaPacientes.get(i).getId().equals(pacienteModificado.getId())) {
-                tablaPacientes.set(i, pacienteModificado);
-                return pacienteModificado;
-            }
+        if (tablaPacientes.containsKey(pacienteModificado.getId())) {
+            tablaPacientes.put(pacienteModificado.getId(), pacienteModificado);
+            return pacienteModificado;
         }
         return null;
     }

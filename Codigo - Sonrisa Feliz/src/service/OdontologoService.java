@@ -1,7 +1,9 @@
 package service;
 
+import entity.OdOrtodoncia;
+import entity.OdEndodoncia;
+import entity.OdExtraccion;
 import entity.Odontologo;
-import entity.Paciente;
 import repository.IRepository;
 import repository.OdontologoRepository;
 
@@ -18,148 +20,57 @@ public class OdontologoService implements IService<Odontologo> {
 
     @Override
     public Odontologo registrar(Odontologo odontologo) {
-        validarOdontologo(odontologo);
+
+        // 1. Validación: El nombre no puede estar vacío
+        if (odontologo.getNombre() == null || odontologo.getNombre().trim().isEmpty()) {
+            System.out.println("Error: El nombre del odontólogo es obligatorio.");
+            return null;
+        }
+
+        // 2. Validación: El apellido no puede estar vacío
+        if (odontologo.getApellido() == null || odontologo.getApellido().trim().isEmpty()) {
+            System.out.println("Error: El apellido del odontólogo es obligatorio.");
+            return null;
+        }
+
+        // 3. Validación: La matrícula no puede estar vacía
+        if (odontologo.getMatricula() == null || odontologo.getMatricula().trim().isEmpty()) {
+            System.out.println("Error: El número de matrícula es obligatorio.");
+            return null;
+        }
+
+        // 4. Validación de Lógica de Negocio: Matrícula Única
+        List<Odontologo> odontologosExistentes = odontologoRepository.buscarTodos();
+        for (Odontologo o : odontologosExistentes) {
+            if (o.getMatricula().equalsIgnoreCase(odontologo.getMatricula())) {
+                System.out.println("Error: Ya existe un odontólogo registrado con la matrícula: " + odontologo.getMatricula());
+                return null;
+            }
+        }
+
+        // =========================================================================
+        // NUEVAS VALIDACIONES DE SUBCLASE (INTEGRIDAD DEL RECARGO DE ESPECIALIDAD)
+        // =========================================================================
+        Double recargo = null;
+
+        // Identificamos dinámicamente qué tipo de especialista está ingresando
+        if (odontologo instanceof OdOrtodoncia) {
+            recargo = ((OdOrtodoncia) odontologo).getRecargoEspecialidad();
+        } else if (odontologo instanceof OdEndodoncia) {
+            recargo = ((OdEndodoncia) odontologo).getRecargoEspecialidad();
+        } else if (odontologo instanceof OdExtraccion) {
+            recargo = ((OdExtraccion) odontologo).getRecargoEspecialidad();
+        }
+
+        // Validamos de forma centralizada el atributo exclusivo de las clases hijas
+        if (recargo == null || recargo <= 0) {
+            System.out.println("Error: El recargo de especialidad debe ser un multiplicador mayor a 0.");
+            return null;
+        }
+
+        // Si superó todas las barreras generales y específicas, se guarda
+        System.out.println("Validaciones superadas con éxito. Registrando odontólogo...");
         return odontologoRepository.guardar(odontologo);
-
-    }
-
-    private void validarOdontologo(Odontologo odontologo) {
-        if (odontologo == null) {
-            throw new IllegalArgumentException("Odontólogo null");
-        }
-
-        validarNombre(odontologo.getNombre());
-        validarApellido(odontologo.getApellido());
-
-        validarDni(odontologo.getDni());
-        validarDniDuplicado(odontologo.getDni());
-
-        validarEmail(odontologo.getEmail());
-        validarEmailDuplicado(odontologo.getEmail());
-
-        validarTelefono(odontologo.getTelefono());
-        validarTelefonoDuplicado(odontologo.getTelefono());
-
-        validarMatricula(odontologo.getMatricula());
-        validarMatriculaDuplicada(odontologo.getMatricula());
-    }
-
-    public void validarNombre(String nombre) {
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
-        }
-
-        if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
-            throw new IllegalArgumentException("El nombre solo debe contener letras");
-        }
-    }
-
-    public void validarApellido(String apellido) {
-        if (apellido == null || apellido.trim().isEmpty()) {
-            throw new IllegalArgumentException("El apellido es obligatorio");
-        }
-
-        if (!apellido.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
-            throw new IllegalArgumentException("El apellido solo debe contener letras");
-        }
-    }
-
-    public void validarDni(String dni) {
-        if (dni == null || dni.trim().isEmpty()) {
-            throw new IllegalArgumentException("El DNI es obligatorio");
-        }
-
-        if (!dni.matches("\\d+")) {
-            throw new IllegalArgumentException("El DNI debe contener solo números");
-        }
-    }
-
-    public void validarDniDuplicado(String dni) {
-        List<Odontologo> odontologos = odontologoRepository.buscarTodos();
-
-        for (Odontologo o : odontologos) {
-            if (o.getDni().equals(dni)) {
-                throw new IllegalArgumentException("Ya existe un Odontologo con ese DNI");
-            }
-        }
-    }
-
-    public void validarEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("El email es obligatorio");
-        }
-
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new IllegalArgumentException("Formato de email inválido");
-        }
-    }
-
-    public void validarEmailDuplicado(String email) {
-        List<Odontologo> odontologos = odontologoRepository.buscarTodos();
-
-        for (Odontologo o : odontologos) {
-            if (o.getEmail().equalsIgnoreCase(email)) {
-                throw new IllegalArgumentException("Ya existe un odontologo con ese email");
-            }
-        }
-    }
-
-    public void validarTelefono(String telefono) {
-        if (telefono == null || telefono.trim().isEmpty()) {
-            throw new IllegalArgumentException("El número de teléfono es obligatorio");
-        }
-
-        else if (!telefono.matches("\\d+")) {
-            throw new IllegalArgumentException("El número de teléfono debe contener solo números");
-        }
-
-        else if (telefono.length() != 10) {
-            throw new IllegalArgumentException("El número de teléfono debe contener 10 dígitos (ej: 11xxxxxxxx)");
-        }
-
-        else if (!telefono.startsWith("11")) {
-            throw new IllegalArgumentException("El número de teléfono debe comenzar con 11");
-        }
-        else {
-            System.out.println("El número de telefono es válido");
-        }
-    }
-
-    public void validarTelefonoDuplicado(String telefono) {
-        List<Odontologo> odontologos = odontologoRepository.buscarTodos();
-
-        for (Odontologo o : odontologos) {
-            if (o.getTelefono().equals(telefono)) {
-                throw new IllegalArgumentException("Ya existe un paciente con ese teléfono");
-            }
-        }
-    }
-
-    // No existe un formato universal para la matricula, se eligió uno razonable
-    private void validarMatricula(String matricula) {
-        if (matricula == null || matricula.trim().isEmpty()) {
-            throw new IllegalArgumentException("La matrícula es obligatoria");
-        }
-
-        // Letras y nros solamente
-        if (!matricula.matches("[a-zA-Z0-9]+")) {
-            throw new IllegalArgumentException("La matrícula debe ser alfanumérica");
-        }
-
-        // longitud
-        if (matricula.length() < 4 || matricula.length() > 10) {
-            throw new IllegalArgumentException("La matrícula debe tener entre 4 y 10 caracteres");
-        }
-    }
-
-    private void validarMatriculaDuplicada(String matricula) {
-        List<Odontologo> lista = odontologoRepository.buscarTodos();
-
-        for (Odontologo o : lista) {
-            if (o.getMatricula().equalsIgnoreCase(matricula)) {
-                throw new IllegalArgumentException("Ya existe un odontólogo con esa matrícula");
-            }
-        }
     }
 
     @Override
@@ -169,7 +80,6 @@ public class OdontologoService implements IService<Odontologo> {
 
     @Override
     public void eliminarPorId(Long id) {
-        // Validamos si realmente existe antes de intentar borrar
         Optional<Odontologo> existente = odontologoRepository.buscarPorId(id);
         if (existente.isEmpty()) {
             System.out.println("Error: No se puede eliminar. No existe odontólogo con ID: " + id);
@@ -181,7 +91,6 @@ public class OdontologoService implements IService<Odontologo> {
 
     @Override
     public Odontologo actualizar(Odontologo odontologo) {
-        // Validamos que nos estén pasando un objeto que ya tiene ID
         if (odontologo.getId() == null) {
             System.out.println("Error: Para actualizar, el odontólogo debe tener un ID asignado.");
             return null;

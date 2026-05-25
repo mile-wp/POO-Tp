@@ -1,4 +1,5 @@
 package entity;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -9,6 +10,7 @@ public class Turno {
     private LocalDate fecha;
     private LocalTime hora;
     private EstadoTurno estado;
+    private Double montoFacturacion;
 
     public Turno() {
     }
@@ -41,12 +43,20 @@ public class Turno {
     public EstadoTurno getEstado() { return estado; }
     public void setEstado(EstadoTurno estado) { this.estado = estado; }
 
+    public Double getMontoFacturacion() { return montoFacturacion; }
+    public void setMontoFacturacion(Double montoFacturacion) { this.montoFacturacion = montoFacturacion; }
+
     @Override
     public String toString() {
-        return "Turno N°" + id +
-                " | Fecha: " + fecha + " " + hora +
-                " | Estado: " + estado +
+        // Lógica de visualización
+        String detalleCobro = (montoFacturacion != null && montoFacturacion > 0)
+                ? "Abonar en caja: $" + montoFacturacion
+                : "Cubierto por Obra Social";
+
+        return "[ID Turno: " + id + "] Fecha: " + fecha + " Hora: " + hora +
                 " | Paciente: " + paciente.getNombre() + " " + paciente.getApellido() +
-                " | Dr/a: " + odontologo.getApellido();
+                " | Médico: " + odontologo.getApellido() +
+                " | Estado: " + estado +
+                " | ===> " + detalleCobro;
     }
 }

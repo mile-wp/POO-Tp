@@ -7,8 +7,7 @@ public class Domicilio {
     private String localidad;
     private String provincia;
 
-    public Domicilio() {
-    }
+    public Domicilio() {}
 
     // CONSTRUCTOR 1: Para nuevos registros (Sin ID)
     public Domicilio(String calle, String altura, String localidad, String provincia) {

@@ -1,5 +1,8 @@
 package service;
 
+import entity.OdOrtodoncia;
+import entity.OdEndodoncia;
+import entity.OdExtraccion;
 import entity.Odontologo;
 import repository.IRepository;
 import repository.OdontologoRepository;
@@ -45,8 +48,28 @@ public class OdontologoService implements IService<Odontologo> {
             }
         }
 
-        // Si superó todas las barreras, lo guardamos en la "base de datos"
-        System.out.println("Validaciones superadas. Registrando odontólogo...");
+        // =========================================================================
+        // NUEVAS VALIDACIONES DE SUBCLASE (INTEGRIDAD DEL RECARGO DE ESPECIALIDAD)
+        // =========================================================================
+        Double recargo = null;
+
+        // Identificamos dinámicamente qué tipo de especialista está ingresando
+        if (odontologo instanceof OdOrtodoncia) {
+            recargo = ((OdOrtodoncia) odontologo).getRecargoEspecialidad();
+        } else if (odontologo instanceof OdEndodoncia) {
+            recargo = ((OdEndodoncia) odontologo).getRecargoEspecialidad();
+        } else if (odontologo instanceof OdExtraccion) {
+            recargo = ((OdExtraccion) odontologo).getRecargoEspecialidad();
+        }
+
+        // Validamos de forma centralizada el atributo exclusivo de las clases hijas
+        if (recargo == null || recargo <= 0) {
+            System.out.println("Error: El recargo de especialidad debe ser un multiplicador mayor a 0.");
+            return null;
+        }
+
+        // Si superó todas las barreras generales y específicas, se guarda
+        System.out.println("Validaciones superadas con éxito. Registrando odontólogo...");
         return odontologoRepository.guardar(odontologo);
     }
 
@@ -57,7 +80,6 @@ public class OdontologoService implements IService<Odontologo> {
 
     @Override
     public void eliminarPorId(Long id) {
-        // Validamos si realmente existe antes de intentar borrar
         Optional<Odontologo> existente = odontologoRepository.buscarPorId(id);
         if (existente.isEmpty()) {
             System.out.println("Error: No se puede eliminar. No existe odontólogo con ID: " + id);
@@ -69,7 +91,6 @@ public class OdontologoService implements IService<Odontologo> {
 
     @Override
     public Odontologo actualizar(Odontologo odontologo) {
-        // Validamos que nos estén pasando un objeto que ya tiene ID
         if (odontologo.getId() == null) {
             System.out.println("Error: Para actualizar, el odontólogo debe tener un ID asignado.");
             return null;

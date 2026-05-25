@@ -93,10 +93,18 @@ public class TurnoService implements IService<Turno> {
         // ==========================================
         List<Turno> turnosAgendados = turnoRepository.buscarTodos();
         for (Turno t : turnosAgendados) {
-            if (t.getOdontologo().getId().equals(turno.getOdontologo().getId())) {
-                // Ahora debemos comparar tanto la fecha como la hora por separado
-                if (t.getFecha().equals(turno.getFecha()) && t.getHora().equals(turno.getHora())) {
-                    System.out.println("Error: El odontólogo ya tiene un turno asignado el " + turno.getFecha() + " a las " + turno.getHora());
+
+            // 1. Verificamos si es el mismo odontólogo y es el mismo día
+            if (t.getOdontologo().getId().equals(turno.getOdontologo().getId()) && t.getFecha().equals(turno.getFecha())) {
+
+                // 2. Calculamos la diferencia de tiempo entre ambos turnos
+                // Usamos .abs() (valor absoluto) para que no importe si el turno nuevo es antes o después del existente
+                long diferenciaMinutos = java.time.Duration.between(t.getHora(), turno.getHora()).abs().toMinutes();
+
+                // 3. Si hay menos de 30 minutos de diferencia, rechazamos el turno
+                if (diferenciaMinutos < 30) {
+                    System.out.println("Error: Choque de agenda. El odontólogo ya tiene un turno a las "
+                            + t.getHora() + ". Debe haber una diferencia mínima de 30 minutos.");
                     return null;
                 }
             }

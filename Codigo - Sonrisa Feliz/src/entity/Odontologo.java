@@ -8,10 +8,12 @@ public abstract class Odontologo {
     private String email;
     private String telefono;
     private String matricula;
+    private Double recargoEspecialidad;
 
     public Odontologo() {}
 
-    public Odontologo(Long id, String nombre, String apellido, String dni, String email, String telefono, String matricula) {
+
+    public Odontologo(Long id, String nombre, String apellido, String dni, String email, String telefono, String matricula, Double recargoEspecialidad) {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -19,7 +21,10 @@ public abstract class Odontologo {
         this.email = email;
         this.telefono = telefono;
         this.matricula = matricula;
+        this.recargoEspecialidad = recargoEspecialidad;
     }
+
+    
 
     // Getters y Setters
     public Long getId() { return id; }
@@ -36,6 +41,8 @@ public abstract class Odontologo {
     public void setTelefono(String telefono) { this.telefono = telefono; }
     public String getMatricula() { return matricula; }
     public void setMatricula(String matricula) { this.matricula = matricula; }
+    public Double getRecargoEspecialidad() { return recargoEspecialidad; }
+    public void setRecargoEspecialidad(Double recargoEspecialidad) { this.recargoEspecialidad = recargoEspecialidad; }
 
     @Override
     public String toString() {

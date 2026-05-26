@@ -2,357 +2,432 @@ package view;
 
 import controller.ClinicaController;
 import entity.*;
+import service.ClinicaException;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
-// Agregamos scanner para ingresar datos desde teclado
 public class Menu {
-    private final ClinicaController controller = new ClinicaController();
-    private final Scanner scanner = new Scanner(System.in);
 
-    // método que inicializa el menú
-    public void iniciar() {
-        System.out.println("\n=== CLINICA SONRISA FELIZ ===");
-        System.out.println("1. Gestión de Pacientes");
-        System.out.println("2. Gestión de Odontólogos");
-        System.out.println("3. Gestión de Turnos");
-        System.out.println("0. Salir");
-        System.out.print("Seleccione una opción: ");
+    private final ClinicaController controller;
+    private final Scanner scanner;
 
-        int opcion;
-
-        try {
-            opcion = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Debe ingresar un número válido.");
-            iniciar();
-            return;
-        }
-
-        procesarOpcionPrincipal(opcion);
+    public Menu() {
+        this.controller = new ClinicaController();
+        this.scanner = new Scanner(System.in);
     }
 
-    private void procesarOpcionPrincipal(int opcion) {
-        if (opcion == 0) {
-            System.out.println("Cerrando el sistema...");
-            return; // Finaliza la ejecución
-        }
+    // ==========================================
+    // MÉTODOS DE VALIDACIÓN LOCAL DE ENTRADA
+    // ==========================================
 
-        switch (opcion) {
-            case 1 -> menuPacientes();
-            case 2 -> menuOdontologos();
-            case 3 -> menuTurnos();
-            default -> {
-                System.out.println("Opción no válida.");
-                iniciar();
+    private String leerTextoSoloLetras(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim();
+            if (entrada.isEmpty()) {
+                System.out.println("❌ El campo no puede estar vacío. Intente de nuevo.");
+                continue;
+            }
+            if (!entrada.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$")) {
+                System.out.println("❌ Dato inválido. Este campo solo permite letras y espacios.");
+                continue;
+            }
+            return entrada;
+        }
+    }
+
+    private String leerTextoSoloNumeros(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim();
+            if (entrada.isEmpty()) {
+                System.out.println("❌ El campo no puede estar vacío. Intente de nuevo.");
+                continue;
+            }
+            if (!entrada.matches("^\\d+$")) {
+                System.out.println("❌ Dato inválido. Este campo solo permite números (sin letras ni espacios).");
+                continue;
+            }
+            return entrada;
+        }
+    }
+
+    private String leerTextoLibre(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim();
+            if (entrada.isEmpty()) {
+                System.out.println("❌ El campo no puede estar vacío. Intente de nuevo.");
+                continue;
+            }
+            return entrada;
+        }
+    }
+
+    private Double leerDoublePositivo(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim().replace(",", ".");
+            try {
+                double valor = Double.parseDouble(entrada);
+                if (valor <= 0) {
+                    System.out.println("❌ El valor debe ser un monto mayor a cero.");
+                    continue;
+                }
+                return valor;
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Entrada inválida. Ingrese un número decimal válido (ej: 1500.50).");
             }
         }
     }
 
-    // --- MENÚ PARA PACIENTES ---
-    private void menuPacientes() {
-        System.out.println("\n--- GESTIÓN DE PACIENTES ---");
-        System.out.println("1. Registrar Paciente");
-        System.out.println("2. Listar Todos");
-        System.out.println("3. Volver al inicio");
-        System.out.print("Seleccione: ");
-
-        int op;
-
-        try {
-            op = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Debe ingresar un número.");
-            menuPacientes();
-            return;
+    private Long leerLong(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim();
+            try {
+                return Long.parseLong(entrada);
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Entrada inválida. Debe ingresar un número entero.");
+            }
         }
+    }
 
-        if (op == 1) {
-            System.out.print("Nombre: "); String nom = scanner.nextLine();
-            System.out.print("Apellido: "); String ape = scanner.nextLine();
-            System.out.print("DNI: "); String dni = scanner.nextLine();
-            System.out.print("Email: "); String email = scanner.nextLine();
-            System.out.print("Teléfono: "); String tel = scanner.nextLine();
+    private LocalDate leerFecha(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim();
+            try {
+                return LocalDate.parse(entrada); 
+            } catch (DateTimeParseException e) {
+                System.out.println("❌ Formato de fecha incorrecto. Use el formato AAAA-MM-DD (ej: 2026-05-15).");
+            }
+        }
+    }
 
-            // Pide datos de domicilio
-            System.out.println("--- DATOS DEL DOMICILIO ---");
-            System.out.print("Calle: "); String calle = scanner.nextLine();
-            System.out.print("Altura/Número: "); String altura = scanner.nextLine();
-            System.out.print("Localidad: "); String localidad = scanner.nextLine();
-            System.out.print("Provincia: "); String provincia = scanner.nextLine();
+    private LocalTime leerHora(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String entrada = scanner.nextLine().trim();
+            try {
+                return LocalTime.parse(entrada); 
+            } catch (DateTimeParseException e) {
+                System.out.println("❌ Formato de hora incorrecto. Use el formato HH:MM (ej: 14:30).");
+            }
+        }
+    }
 
-            // 1. Crear el objeto Domicilio
-            Domicilio dom = new Domicilio();
-            dom.setCalle(calle);
-            dom.setAltura(altura);
-            dom.setLocalidad(localidad);
-            dom.setProvincia(provincia);
+    // ==========================================
+    // MENÚS Y FLUJOS PRINCIPALES
+    // ==========================================
 
-            // 2. SELECCIÓN DE TIPO DE PACIENTE (El gran cambio)
+    public void iniciar() {
+        int opcion = -1;
+        do {
+            System.out.println("\n=== CLINICA ODONTOLOGICA: SONRISA FELIZ ===");
+            System.out.println("1. Gestión de Pacientes");
+            System.out.println("2. Gestión de Odontólogos");
+            System.out.println("3. Gestión de Turnos");
+            System.out.println("0. Salir");
+            
+            opcion = leerLong("Seleccione una opción: ").intValue();
+
+            switch (opcion) {
+                case 1 -> menuPacientes();
+                case 2 -> menuOdontologos();
+                case 3 -> menuTurnos();
+                case 0 -> System.out.println("\nGracias por utilizar el sistema. ¡Hasta pronto!");
+                default -> System.out.println("❌ Opción no válida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private void menuPacientes() {
+        int opcion = -1;
+        do {
+            System.out.println("\n--- GESTIÓN DE PACIENTES ---");
+            System.out.println("1. Registrar Paciente");
+            System.out.println("2. Listar Todos");
+            System.out.println("0. Volver al inicio");
+            
+            opcion = leerLong("Seleccione: ").intValue();
+
+            switch (opcion) {
+                case 1 -> registrarPaciente();
+                case 2 -> listarPacientes();
+                case 0 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("❌ Opción no válida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private void registrarPaciente() {
+        System.out.println("\n--- Datos Personales del Paciente ---");
+        String nom = leerTextoSoloLetras("Nombre: ");
+        String ape = leerTextoSoloLetras("Apellido: ");
+        String dni = leerTextoSoloNumeros("DNI (solo números): ");
+        String email = leerTextoLibre("Email: ");
+        String tel = leerTextoSoloNumeros("Teléfono: ");
+
+        System.out.println("--- Datos del Domicilio ---");
+        String calle = leerTextoLibre("Calle: ");
+        String altura = leerTextoSoloNumeros("Altura/Número: ");
+        String localidad = leerTextoSoloLetras("Localidad: ");
+        String provincia = leerTextoSoloLetras("Provincia: ");
+
+        Domicilio dom = new Domicilio();
+        dom.setCalle(calle);
+        dom.setAltura(altura);
+        dom.setLocalidad(localidad);
+        dom.setProvincia(provincia);
+
+        Paciente p = null;
+        int tipoPac = -1;
+        while (p == null) {
             System.out.println("--- COBERTURA MÉDICA ---");
             System.out.println("1. Con Obra Social");
             System.out.println("2. Particular");
-            System.out.print("Seleccione: ");
-
-            int tipoPac;
-
-            try {
-                tipoPac = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Error: Debe ingresar una opción válida.");
-                menuPacientes();
-                return;
-            }
-
-            // Declaramos la variable de la clase abstracta (Polimorfismo)
-            Paciente p;
-
+            tipoPac = leerLong("Seleccione una opción: ").intValue();
+            
             if (tipoPac == 1) {
-                System.out.print("Nombre de la Obra Social: "); String obs = scanner.nextLine();
-                System.out.print("Número de Afiliado: "); String numAfi = scanner.nextLine();
-
                 PacienteObraSocial pOS = new PacienteObraSocial();
-                pOS.setNombreObraSocial(obs);
-                pOS.setNumAfiliado(numAfi);
-                p = pOS; // Asignamos el hijo a la variable padre
-            } else {
-                System.out.print("Tarifa Base del Paciente (ej: 5000.50): ");
-                String inputTarifa = scanner.nextLine();
-                double tarifa = Double.parseDouble(inputTarifa.replace(",", "."));
-
+                pOS.setNombreObraSocial(leerTextoSoloLetras("Nombre de la Obra Social: "));
+                pOS.setNumAfiliado(leerTextoSoloNumeros("Número de Afiliado: "));
+                p = pOS; 
+            } else if (tipoPac == 2) {
                 PacienteParticular pP = new PacienteParticular();
-                pP.setTarifaBase(tarifa);
-                p = pP; // Asignamos el hijo a la variable padre
+                pP.setTarifaBase(leerDoublePositivo("Tarifa Base del Paciente: "));
+                p = pP; 
+            } else {
+                System.out.println("❌ Opción de cobertura incorrecta. Elija 1 o 2.");
             }
+        }
 
-            // 3. Setear los datos comunes de la clase abstracta Persona/Paciente
-            p.setNombre(nom);
-            p.setApellido(ape);
-            p.setDni(dni);
-            p.setEmail(email);    // Ya no debería dar error si está en la Entity
-            p.setTelefono(tel);   // Ya no debería dar error si está en la Entity
-            p.setFechaIngreso(LocalDate.now()); // Seteamos la fecha de hoy automáticamente
-            p.setDomicilio(dom);
+        // Seteo de atributos heredados en la clase abstracta
+        p.setNombre(nom);
+        p.setApellido(ape);
+        p.setDni(dni);
+        p.setEmail(email);    
+        p.setTelefono(tel);   
+        p.setFechaIngreso(LocalDate.now()); 
+        p.setDomicilio(dom);
 
-            try {
-                controller.registrarPaciente(p);
-                System.out.println("Paciente registrado con éxito.");
-            } catch (IllegalArgumentException e) {
-                System.out.println("Error: " + e.getMessage());
+        try {
+            Paciente registrado = controller.registrarPaciente(p);
+            if (registrado != null) {
+                System.out.println("✅ Paciente registrado con éxito. ID Asignado: " + registrado.getId());
+            } else {
+                System.out.println("❌ No se pudo registrar el paciente debido a una falla en las validaciones básicas.");
             }
-            menuPacientes();
-
-        } else if (op == 2) {
-            controller.listarPacientes().forEach(System.out::println);
-            menuPacientes();
-        } else {
-            iniciar();
+        } catch (ClinicaException e) {
+            System.out.println("\n❌ Error de negocio [" + e.getCodigoError() + "]: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("\n❌ Error inesperado al registrar: " + e.getMessage());
         }
     }
 
-    // --- MENÚ PARA ODONTÓLOGOS ---
-    private void menuOdontologos() {
-        System.out.println("\n--- GESTIÓN DE ODONTÓLOGOS ---");
-        System.out.println("1. Registrar Odontólogo");
-        System.out.println("2. Listar Todos");
-        System.out.println("3. Volver");
-        System.out.print("Seleccione: ");
-
-        int op;
-
+    private void listarPacientes() {
+        System.out.println("\n--- LISTADO DE PACIENTES ---");
         try {
-            op = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Debe ingresar un número válido.");
-            iniciar();
-            return;
+            List<Paciente> pacientes = controller.listarPacientes();
+            if (pacientes.isEmpty()) {
+                System.out.println("No hay pacientes registrados.");
+            } else {
+                pacientes.forEach(System.out::println);
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Error al recuperar la lista de pacientes: " + e.getMessage());
         }
+    }
 
-        if (op == 1) {
-            System.out.print("Nombre: "); String nom = scanner.nextLine();
-            System.out.print("Apellido: "); String ape = scanner.nextLine();
-            System.out.print("DNI: "); String dni = scanner.nextLine();
-            System.out.print("Matrícula: "); String mat = scanner.nextLine();
+    // ==========================================
+    // GESTIÓN DE ODONTÓLOGOS (CONSTRUCTORES CORREGIDOS)
+    // ==========================================
 
+    private void menuOdontologos() {
+        int opcion = -1;
+        do {
+            System.out.println("\n--- GESTIÓN DE ODONTÓLOGOS ---");
+            System.out.println("1. Registrar Odontólogo");
+            System.out.println("2. Listar Todos");
+            System.out.println("0. Volver");
+            
+            opcion = leerLong("Seleccione: ").intValue();
+
+            switch (opcion) {
+                case 1 -> registrarOdontologo();
+                case 2 -> listarOdontologos();
+                case 0 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("❌ Opción no válida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private void registrarOdontologo() {
+        System.out.println("\n--- Registrar Nuevo Odontólogo ---");
+        String nom = leerTextoSoloLetras("Nombre: ");
+        String ape = leerTextoSoloLetras("Apellido: ");
+        String dni = leerTextoSoloNumeros("DNI (solo números): ");
+        String mat = leerTextoSoloNumeros("Matrícula (solo números): ");
+
+        Odontologo o = null;
+        int espOp = -1;
+        
+        while (o == null) {
             System.out.println("--- SELECCIÓN DE ESPECIALIDAD ---");
             System.out.println("1. ORTODONCIA");
             System.out.println("2. ENDODONCIA");
             System.out.println("3. EXTRACCIONES");
-            System.out.print("Opción: ");
+            espOp = leerLong("Opción: ").intValue();
 
-            int espOp;
-
-            try {
-                espOp = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Error: Debe ingresar una opción válida.");
-                menuOdontologos();
-                return;
-            }
-
-            System.out.print("Ingrese el recargo de especialidad (ej: 1.5): ");
-            String inputRecargo = scanner.nextLine(); // Leemos como texto
-
-            double recargo;
-
-            try {
-                recargo = Double.parseDouble(inputRecargo.replace(",", "."));
-            } catch (NumberFormatException e) {
-                System.out.println("Error: El recargo debe ser numérico.");
-                menuOdontologos();
-                return;
-            }
-
-            // Declaramos la variable de la clase abstracta
-            Odontologo o;
-
-            // Instanciamos la clase concreta elegida
-            switch (espOp) {
-                case 1 -> {
-                    OdOrtodoncia od = new OdOrtodoncia();
-                    od.setRecargoEspecialidad(recargo);
-                    o = od;
+            if (espOp >= 1 && espOp <= 3) {
+                Double recargo = leerDoublePositivo("Ingrese el recargo de especialidad (ej: 1.5): ");
+                
+                // Corrección: Usamos instanciación limpia y asignación de recargo vía setters
+                // Evitamos llamar a constructores parametrizados erróneos o incompletos
+                switch (espOp) {
+                    case 1 -> {
+                        OdOrtodoncia od = new OdOrtodoncia();
+                        od.setRecargoEspecialidad(recargo);
+                        o = od;
+                    }
+                    case 2 -> {
+                        OdEndodoncia od = new OdEndodoncia();
+                        od.setRecargoEspecialidad(recargo);
+                        o = od;
+                    }
+                    case 3 -> {
+                        OdExtraccion od = new OdExtraccion();
+                        od.setRecargoEspecialidad(recargo);
+                        o = od;
+                    }
                 }
-                case 2 -> {
-                    OdEndodoncia od = new OdEndodoncia();
-                    od.setRecargoEspecialidad(recargo);
-                    o = od;
-                }
-                case 3 -> {
-                    OdExtraccion od = new OdExtraccion();
-                    od.setRecargoEspecialidad(recargo);
-                    o = od;
-                }
-                default -> {
-                    System.out.println("Opción inválida, se asignará ORTODONCIA por defecto.");
-                    OdOrtodoncia od = new OdOrtodoncia();
-                    od.setRecargoEspecialidad(recargo);
-                    o = od;
-                }
+            } else {
+                System.out.println("❌ Opción inválida. Seleccione una especialidad del 1 al 3.");
             }
+        }
 
-            // Seteamos los datos comunes heredados
-            o.setNombre(nom);
-            o.setApellido(ape);
-            o.setDni(dni);
-            o.setMatricula(mat);
+        // Seteamos los datos comunes heredados en la entidad abstracta madre
+        o.setNombre(nom);
+        o.setApellido(ape);
+        o.setDni(dni);
+        o.setMatricula(mat);
 
-            try {
-                controller.registrarOdontologo(o);
-                System.out.println("Odontólogo registrado con éxito.");
-
-            } catch (IllegalArgumentException e) {
-                System.out.println("Error: " + e.getMessage());
+        try {
+            Odontologo registrado = controller.registrarOdontologo(o);
+            if (registrado != null) {
+                System.out.println("✅ Odontólogo registrado con éxito. ID Asignado: " + registrado.getId());
+            } else {
+                System.out.println("❌ No se pudo guardar el odontólogo por infracciones en reglas de validación.");
             }
-            menuOdontologos();
-
-        } else if (op == 2) {
-            controller.listarOdontologos().forEach(System.out::println);
-            menuOdontologos();
-        } else {
-            iniciar();
+        } catch (ClinicaException e) {
+            System.out.println("\n❌ Error de negocio [" + e.getCodigoError() + "]: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("\n❌ Error inesperado: " + e.getMessage());
         }
     }
 
-    // --- MENÚ PARA TURNOS ---
-    private void menuTurnos() {
-        System.out.println("\n--- GESTIÓN DE TURNOS ---");
-        System.out.println("1. Reservar Nuevo Turno");
-        System.out.println("2. Listar Todos los Turnos");
-        System.out.println("3. Volver al Inicio");
-        System.out.print("Seleccione: ");
-
-        int op;
-
+    private void listarOdontologos() {
+        System.out.println("\n--- LISTADO DE ODONTÓLOGOS ---");
         try {
-            op = Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Debe ingresar un número.");
-            menuOdontologos();
+            List<Odontologo> odontologos = controller.listarOdontologos();
+            if (odontologos.isEmpty()) {
+                System.out.println("No hay odontólogos registrados.");
+            } else {
+                odontologos.forEach(System.out::println);
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Error al recuperar la lista de odontólogos: " + e.getMessage());
+        }
+    }
+
+    // ==========================================
+    // GESTIÓN DE TURNOS (MÉTODOS EXACTOS DEL CONTROLADOR)
+    // ==========================================
+
+    private void menuTurnos() {
+        int opcion = -1;
+        do {
+            System.out.println("\n--- GESTIÓN DE TURNOS ---");
+            System.out.println("1. Reservar Nuevo Turno");
+            System.out.println("2. Listar Todos los Turnos");
+            System.out.println("0. Volver al Inicio");
+            
+            opcion = leerLong("Seleccione una opción: ").intValue();
+
+            switch (opcion) {
+                case 1 -> agendarTurno();
+                case 2 -> listarTurnos();
+                case 0 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("❌ Opción no válida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private void agendarTurno() {
+        System.out.println("\n--- Reservar Nuevo Turno ---");
+        
+        // Uso exacto de métodos del controlador: buscarPacienteId y buscarOdontologoId
+        Long idPac = leerLong("Ingrese ID del Paciente: ");
+        var pacienteOpt = controller.buscarPacienteId(idPac);
+
+        if (pacienteOpt.isEmpty()) {
+            System.out.println("❌ Error: El paciente con ID " + idPac + " no existe. Operación cancelada.");
             return;
         }
 
-        if (op == 1) {
-            System.out.print("Ingrese ID del Paciente: ");
+        Long idOdonto = leerLong("Ingrese ID del Odontólogo: ");
+        var odontoOpt = controller.buscarOdontologoId(idOdonto);
 
-            Long idPac;
+        if (odontoOpt.isEmpty()) {
+            System.out.println("❌ Error: El odontólogo con ID " + idOdonto + " no existe. Operación cancelada.");
+            return;
+        }
 
-            try {
-                idPac = Long.parseLong(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Error: El ID del paciente debe ser numérico.");
-                menuTurnos();
-                return;
+        // Lectura de parámetros temporales aislada y segura
+        LocalDate fecha = leerFecha("Ingrese la fecha (Año-Mes-Día, ej: 2026-05-15): ");
+        LocalTime hora = leerHora("Ingrese la hora (Hora:Minutos, ej: 14:30): ");
+
+        try {
+            Turno nuevoTurno = new Turno();
+            nuevoTurno.setPaciente(pacienteOpt.get());
+            nuevoTurno.setOdontologo(odontoOpt.get());
+            nuevoTurno.setFecha(fecha);
+            nuevoTurno.setHora(hora);
+
+            Turno registrado = controller.agendarTurno(nuevoTurno);
+
+            if (registrado != null) {
+                System.out.println("\n=============================================");
+                System.out.println("✅ ¡Turno agendado con éxito! ID Asignado: " + registrado.getId());
+                System.out.println("Monto calculado de facturación: $" + registrado.getMontoFacturacion());
+                System.out.println("=============================================");
+            } else {
+                System.out.println("❌ No se pudo agendar el turno. Revise las reglas de negocio en consola.");
             }
+        } catch (ClinicaException e) {
+            System.out.println("\n❌ Error de Agenda [" + e.getCodigoError() + "]: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ Ocurrió un error inesperado al procesar el turno en el sistema.");
+        }
+    }
 
-            var pacienteOpt = controller.buscarPacienteId(idPac);
-
-            if (pacienteOpt.isEmpty()) {
-                System.out.println("Error: El paciente con ID " + idPac + " no existe.");
-                menuTurnos();
-                return;
-            }
-
-            System.out.print("Ingrese ID del Odontólogo: ");
-
-            Long idOdonto;
-
-            try {
-                idOdonto = Long.parseLong(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Error: El ID del odontólogo debe ser numérico.");
-                menuTurnos();
-                return;
-            }
-
-            var odontoOpt = controller.buscarOdontologoId(idOdonto);
-
-            if (odontoOpt.isEmpty()) {
-                System.out.println("Error: El odontólogo con ID " + idOdonto + " no existe.");
-                menuTurnos();
-                return;
-            }
-
-            System.out.print("Ingrese la fecha (Año-Mes-Día, ej: 2026-05-15): ");
-            String fechaStr = scanner.next();
-            System.out.print("Ingrese la hora (Hora:Minutos, ej: 14:30): ");
-            String horaStr = scanner.next();
-
-            try {
-                Turno nuevoTurno = new Turno();
-                nuevoTurno.setPaciente(pacienteOpt.get());
-                nuevoTurno.setOdontologo(odontoOpt.get());
-                nuevoTurno.setFecha(LocalDate.parse(fechaStr));
-                nuevoTurno.setHora(LocalTime.parse(horaStr));
-
-                // NOTA: Si aún no creaste el Enum EstadoTurno en la entidad, comentalo temporalmente.
-                // nuevoTurno.setEstado(EstadoTurno.PENDIENTE);
-
-                Turno registrado = controller.agendarTurno(nuevoTurno);
-
-                if (registrado != null) {
-                    System.out.println("¡Turno agendado con éxito! ID: " + registrado.getId());
-                } else {
-                    System.out.println("No se pudo agendar el turno. Revise las reglas de negocio (horarios o choques).");
-                }
-            } catch (Exception e) {
-                System.out.println("Error en el formato de fecha u hora. Intente nuevamente.");
-            }
-
-            menuTurnos();
-
-        } else if (op == 2) {
-            System.out.println("\n--- LISTADO DE TURNOS ---");
+    private void listarTurnos() {
+        System.out.println("\n--- LISTADO DE TURNOS ---");
+        try {
             var turnos = controller.listarTurnos();
             if (turnos.isEmpty()) {
                 System.out.println("No hay turnos registrados.");
             } else {
                 turnos.forEach(System.out::println);
             }
-            menuTurnos();
-        } else {
-            iniciar();
+        } catch (Exception e) {
+            System.out.println("❌ Error al recuperar la agenda: " + e.getMessage());
         }
     }
 }

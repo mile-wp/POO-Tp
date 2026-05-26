@@ -20,86 +20,101 @@ public class OdontologoService implements IService<Odontologo> {
 
     @Override
     public Odontologo registrar(Odontologo odontologo) {
-
-        // 1. Validación: El nombre no puede estar vacío
-        if (odontologo.getNombre() == null || odontologo.getNombre().trim().isEmpty()) {
-            System.out.println("Error: El nombre del odontólogo es obligatorio.");
-            return null;
-        }
-
-        // 2. Validación: El apellido no puede estar vacío
-        if (odontologo.getApellido() == null || odontologo.getApellido().trim().isEmpty()) {
-            System.out.println("Error: El apellido del odontólogo es obligatorio.");
-            return null;
-        }
-
-        // 3. Validación: La matrícula no puede estar vacía
-        if (odontologo.getMatricula() == null || odontologo.getMatricula().trim().isEmpty()) {
-            System.out.println("Error: El número de matrícula es obligatorio.");
-            return null;
-        }
-
-        // 4. Validación de Lógica de Negocio: Matrícula Única
-        List<Odontologo> odontologosExistentes = odontologoRepository.buscarTodos();
-        for (Odontologo o : odontologosExistentes) {
-            if (o.getMatricula().equalsIgnoreCase(odontologo.getMatricula())) {
-                System.out.println("Error: Ya existe un odontólogo registrado con la matrícula: " + odontologo.getMatricula());
-                return null;
+        try {
+            if (odontologo.getNombre() == null || odontologo.getNombre().trim().isEmpty()) {
+                throw new DatoInvalidoException("Nombre Odontólogo", "El nombre es obligatorio.");
             }
+            if (odontologo.getApellido() == null || odontologo.getApellido().trim().isEmpty()) {
+                throw new DatoInvalidoException("Apellido Odontólogo", "El apellido es obligatorio.");
+            }
+            if (odontologo.getMatricula() == null || odontologo.getMatricula().trim().isEmpty()) {
+                throw new DatoInvalidoException("Matrícula", "El número de matrícula es obligatorio.");
+            }
+
+            List<Odontologo> odontologosExistentes = odontologoRepository.buscarTodos();
+            for (Odontologo o : odontologosExistentes) {
+                if (o.getMatricula().equalsIgnoreCase(odontologo.getMatricula())) {
+                    throw new ClinicaException("Ya existe un odontólogo con la matrícula: " + odontologo.getMatricula(), "ERR_ODO_002");
+                }
+            }
+
+            Double recargo = null;
+            if (odontologo instanceof OdOrtodoncia) {
+                recargo = ((OdOrtodoncia) odontologo).getRecargoEspecialidad();
+            } else if (odontologo instanceof OdEndodoncia) {
+                recargo = ((OdEndodoncia) odontologo).getRecargoEspecialidad();
+            } else if (odontologo instanceof OdExtraccion) {
+                recargo = ((OdExtraccion) odontologo).getRecargoEspecialidad();
+            }
+
+            if (recargo == null || recargo <= 0) {
+                throw new DatoInvalidoException("Recargo Especialidad", "Debe ser un multiplicador mayor a 0.");
+            }
+
+            System.out.println("Validaciones superadas con éxito. Registrando odontólogo...");
+            return odontologoRepository.guardar(odontologo);
+
+        } catch (ClinicaException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ClinicaException("Error inesperado al registrar el odontólogo: " + e.getMessage(), "ERR_GEN_006");
+        } finally {
+            System.out.println("[Auditoría] Finalizó el intento de registro del odontólogo.");
         }
-
-        // =========================================================================
-        // NUEVAS VALIDACIONES DE SUBCLASE (INTEGRIDAD DEL RECARGO DE ESPECIALIDAD)
-        // =========================================================================
-        Double recargo = null;
-
-        // Identificamos dinámicamente qué tipo de especialista está ingresando
-        if (odontologo instanceof OdOrtodoncia) {
-            recargo = ((OdOrtodoncia) odontologo).getRecargoEspecialidad();
-        } else if (odontologo instanceof OdEndodoncia) {
-            recargo = ((OdEndodoncia) odontologo).getRecargoEspecialidad();
-        } else if (odontologo instanceof OdExtraccion) {
-            recargo = ((OdExtraccion) odontologo).getRecargoEspecialidad();
-        }
-
-        // Validamos de forma centralizada el atributo exclusivo de las clases hijas
-        if (recargo == null || recargo <= 0) {
-            System.out.println("Error: El recargo de especialidad debe ser un multiplicador mayor a 0.");
-            return null;
-        }
-
-        // Si superó todas las barreras generales y específicas, se guarda
-        System.out.println("Validaciones superadas con éxito. Registrando odontólogo...");
-        return odontologoRepository.guardar(odontologo);
     }
 
     @Override
     public Optional<Odontologo> buscarPorId(Long id) {
-        return odontologoRepository.buscarPorId(id);
+        try {
+            if (id == null || id <= 0) {
+                throw new DatoInvalidoException("ID Odontólogo", "El ID provisto no es válido.");
+            }
+            return odontologoRepository.buscarPorId(id);
+        } catch (Exception e) {
+            throw new ClinicaException("Error al buscar odontólogo: " + e.getMessage(), "ERR_GEN_007");
+        }
     }
 
     @Override
     public void eliminarPorId(Long id) {
-        Optional<Odontologo> existente = odontologoRepository.buscarPorId(id);
-        if (existente.isEmpty()) {
-            System.out.println("Error: No se puede eliminar. No existe odontólogo con ID: " + id);
-            return;
+        try {
+            Optional<Odontologo> existente = odontologoRepository.buscarPorId(id);
+            if (existente.isEmpty()) {
+                throw new OdontologoNoEncontradoException(id);
+            }
+            odontologoRepository.eliminar(id);
+            System.out.println("Odontólogo eliminado correctamente.");
+        } catch (ClinicaException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ClinicaException("Error al eliminar odontólogo: " + e.getMessage(), "ERR_GEN_008");
         }
-        odontologoRepository.eliminar(id);
-        System.out.println("Odontólogo eliminado correctamente.");
     }
 
     @Override
     public Odontologo actualizar(Odontologo odontologo) {
-        if (odontologo.getId() == null) {
-            System.out.println("Error: Para actualizar, el odontólogo debe tener un ID asignado.");
-            return null;
+        try {
+            if (odontologo.getId() == null) {
+                throw new DatoInvalidoException("ID Odontólogo", "Para actualizar, debe tener un ID asignado.");
+            }
+            Odontologo actualizado = odontologoRepository.actualizar(odontologo);
+            if (actualizado == null) {
+                throw new OdontologoNoEncontradoException(odontologo.getId());
+            }
+            return actualizado;
+        } catch (ClinicaException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ClinicaException("Error al actualizar odontólogo: " + e.getMessage(), "ERR_GEN_009");
         }
-        return odontologoRepository.actualizar(odontologo);
     }
 
     @Override
     public List<Odontologo> listarTodos() {
-        return odontologoRepository.buscarTodos();
+        try {
+            return odontologoRepository.buscarTodos();
+        } catch (Exception e) {
+            throw new ClinicaException("Error al listar odontólogos: " + e.getMessage(), "ERR_GEN_010");
+        }
     }
 }

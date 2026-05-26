@@ -130,8 +130,8 @@ public class Menu {
         int opcion = -1;
         do {
             System.out.println("\n=== CLINICA ODONTOLOGICA: SONRISA FELIZ ===");
-            System.out.println("1. Gestionar Pacientes");
-            System.out.println("2. Gestionar Odontólogos");
+            System.out.println("1. Gestión de Pacientes");
+            System.out.println("2. Gestión de Odontólogos");
             System.out.println("3. Gestión de Turnos");
             System.out.println("0. Salir");
             

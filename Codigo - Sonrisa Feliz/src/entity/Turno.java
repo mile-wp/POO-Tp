@@ -2,8 +2,11 @@ package entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.io.Serializable;
 
-public class Turno {
+public class Turno implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private Paciente paciente;      // Asociación con Paciente
     private Odontologo odontologo;  // Asociación con Odontólogo

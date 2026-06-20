@@ -1,38 +1,61 @@
 package repository;
 
 import entity.Turno;
-
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class TurnoRepository implements IRepository<Turno> {
 
-    private List<Turno> tablaTurnos;
-
-    private Long generadorId;
+    private List<Turno> tablaTurnos = new ArrayList<>();
+    private Long generadorId = 1L;
+    private static final String FILE_NAME = "src/data/turnos.dat";
 
     public TurnoRepository() {
-        this.tablaTurnos = new ArrayList<>();
-        this.generadorId = 1L; // El primer turno que se guarde tendrá el ID 1
+        cargarDesdeArchivo();
     }
+
+    // --- MÉTODOS DE PERSISTENCIA ---
+
+    private void guardarEnArchivo() {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            out.writeObject(tablaTurnos);
+            out.writeObject(generadorId);
+        } catch (IOException e) {
+            System.err.println("Error al guardar turnos: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cargarDesdeArchivo() {
+        File file = new File(FILE_NAME);
+        if (file.exists()) {
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+                tablaTurnos = (List<Turno>) in.readObject();
+                generadorId = (Long) in.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                System.err.println("Error al cargar turnos: " + e.getMessage());
+            }
+        }
+    }
+
+    // --- MÉTODOS DE NEGOCIO ---
 
     @Override
     public Turno guardar(Turno turno) {
         turno.setId(generadorId);
         generadorId++;
         tablaTurnos.add(turno);
+        guardarEnArchivo(); // Persistencia automática
         return turno;
     }
 
     @Override
     public Optional<Turno> buscarPorId(Long id) {
-        for (Turno turno : tablaTurnos) {
-            if (turno.getId().equals(id)) {
-                return Optional.of(turno);
-            }
-        }
-        return Optional.empty(); // Retorno seguro si el turno no existe
+        return tablaTurnos.stream()
+                .filter(t -> t.getId().equals(id))
+                .findFirst();
     }
 
     @Override
@@ -42,7 +65,9 @@ public class TurnoRepository implements IRepository<Turno> {
 
     @Override
     public void eliminar(Long id) {
-        tablaTurnos.removeIf(turno -> turno.getId().equals(id));
+        if (tablaTurnos.removeIf(turno -> turno.getId().equals(id))) {
+            guardarEnArchivo(); // Persistencia automática
+        }
     }
 
     @Override
@@ -50,10 +75,10 @@ public class TurnoRepository implements IRepository<Turno> {
         for (int i = 0; i < tablaTurnos.size(); i++) {
             if (tablaTurnos.get(i).getId().equals(turnoModificado.getId())) {
                 tablaTurnos.set(i, turnoModificado);
+                guardarEnArchivo(); // Persistencia automática
                 return turnoModificado;
             }
         }
-
         return null;
     }
 }

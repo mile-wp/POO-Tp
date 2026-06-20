@@ -2,7 +2,6 @@ package repository;
 
 import entity.Odontologo;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,61 +12,13 @@ public class OdontologoRepository implements IRepository<Odontologo> {
 
     private Map<Long, Odontologo> tablaOdontologos = new HashMap<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = obtenerRutaArchivo();
+    private static final String FILE_NAME = "src/data/odontologos.dat";
 
     public OdontologoRepository() {
-        crearCarpetaSiNoExiste();
         cargarDesdeArchivo();
     }
 
     // --- MÉTODOS DE PERSISTENCIA ---
-
-    /**
-     * Calcula la ruta absoluta de "src/data/odontologos.dat" basándose en la
-     * raíz real del proyecto (donde está la carpeta "src"), sin depender del
-     * working directory configurado en cada IDE.
-     */
-    private static String obtenerRutaArchivo() {
-        try {
-            File ubicacionClases = new File(
-                    OdontologoRepository.class.getProtectionDomain()
-                            .getCodeSource()
-                            .getLocation()
-                            .toURI()
-            );
-
-            // ubicacionClases suele ser .../NombreProyecto/out/production/NombreModulo
-            // Subimos hasta encontrar la raíz del proyecto (donde está "src")
-            File directorioActual = ubicacionClases;
-            while (directorioActual != null && !new File(directorioActual, "src").isDirectory()) {
-                directorioActual = directorioActual.getParentFile();
-            }
-
-            if (directorioActual == null) {
-                // No se encontró "src" subiendo en el árbol: usamos ruta relativa como respaldo
-                System.err.println("No se pudo localizar la carpeta 'src'. Se usará ruta relativa.");
-                return "src/data/odontologos.dat";
-            }
-
-            return new File(directorioActual, "src/data/odontologos.dat").getAbsolutePath();
-
-        } catch (URISyntaxException | NullPointerException e) {
-            System.err.println("Error al calcular la ruta del archivo: " + e.getMessage());
-            return "src/data/odontologos.dat";
-        }
-    }
-
-    private void crearCarpetaSiNoExiste() {
-        File carpeta = new File(FILE_NAME).getParentFile();
-        if (carpeta != null && !carpeta.exists()) {
-            boolean creada = carpeta.mkdirs();
-            if (creada) {
-                System.out.println("Carpeta '" + carpeta.getPath() + "' creada correctamente.");
-            } else {
-                System.err.println("No se pudo crear la carpeta '" + carpeta.getPath() + "'.");
-            }
-        }
-    }
 
     private void guardarEnArchivo() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {

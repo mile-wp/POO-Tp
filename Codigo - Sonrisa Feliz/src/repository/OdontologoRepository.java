@@ -15,10 +15,23 @@ public class OdontologoRepository implements IRepository<Odontologo> {
     private static final String FILE_NAME = "src/data/odontologos.dat";
 
     public OdontologoRepository() {
+        crearCarpetaSiNoExiste();
         cargarDesdeArchivo();
     }
 
     // --- MÉTODOS DE PERSISTENCIA ---
+
+    private void crearCarpetaSiNoExiste() {
+        File carpeta = new File("src/data");
+        if (!carpeta.exists()) {
+            boolean creada = carpeta.mkdirs();
+            if (creada) {
+                System.out.println("Carpeta 'src/data' creada correctamente.");
+            } else {
+                System.err.println("No se pudo crear la carpeta 'src/data'.");
+            }
+        }
+    }
 
     private void guardarEnArchivo() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {

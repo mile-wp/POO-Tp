@@ -15,17 +15,30 @@ public class PacienteRepository implements IRepository<Paciente> {
     private static final String FILE_NAME = "src/data/pacientes.dat";
 
     public PacienteRepository() {
+        crearCarpetaSiNoExiste();
         cargarDesdeArchivo();
     }
 
     // --- MÉTODOS DE PERSISTENCIA ---
 
+    private void crearCarpetaSiNoExiste() {
+        File carpeta = new File("src/data");
+        if (!carpeta.exists()) {
+            boolean creada = carpeta.mkdirs();
+            if (creada) {
+                System.out.println("Carpeta 'src/data' creada correctamente.");
+            } else {
+                System.err.println("No se pudo crear la carpeta 'src/data'.");
+            }
+        }
+    }
+
     private void guardarEnArchivo() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             out.writeObject(tablaPacientes);
-            out.writeObject(generadorId);
+            out.writeObject(generadorId); // Guardamos también el ID actual para no perder la secuencia
         } catch (IOException e) {
-            System.err.println("Error al guardar pacientes: " + e.getMessage());
+            System.err.println("Error al guardar pacientes en archivo: " + e.getMessage());
         }
     }
 
@@ -37,19 +50,19 @@ public class PacienteRepository implements IRepository<Paciente> {
                 tablaPacientes = (Map<Long, Paciente>) in.readObject();
                 generadorId = (Long) in.readObject();
             } catch (IOException | ClassNotFoundException e) {
-                System.err.println("Error al cargar pacientes: " + e.getMessage());
+                System.err.println("Error al cargar pacientes desde archivo: " + e.getMessage());
             }
         }
     }
 
-    // --- MÉTODOS DE NEGOCIO ---
+    // --- MÉTODOS SOBREESCRITOS ---
 
     @Override
     public Paciente guardar(Paciente paciente) {
         paciente.setId(generadorId);
         tablaPacientes.put(generadorId, paciente);
         generadorId++;
-        guardarEnArchivo(); // Persistencia automática
+        guardarEnArchivo(); // Persistimos tras el cambio
         return paciente;
     }
 
@@ -66,14 +79,14 @@ public class PacienteRepository implements IRepository<Paciente> {
     @Override
     public void eliminar(Long id) {
         tablaPacientes.remove(id);
-        guardarEnArchivo(); // Actualizamos archivo tras eliminar
+        guardarEnArchivo(); // Persistimos tras el cambio
     }
 
     @Override
     public Paciente actualizar(Paciente pacienteModificado) {
         if (tablaPacientes.containsKey(pacienteModificado.getId())) {
             tablaPacientes.put(pacienteModificado.getId(), pacienteModificado);
-            guardarEnArchivo(); // Actualizamos archivo tras modificar
+            guardarEnArchivo(); // Persistimos tras el cambio
             return pacienteModificado;
         }
         return null;

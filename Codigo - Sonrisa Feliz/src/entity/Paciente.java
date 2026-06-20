@@ -1,8 +1,11 @@
 package entity;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public abstract class Paciente {
+public abstract class Paciente implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String nombre;
     private String apellido;

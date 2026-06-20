@@ -1,6 +1,10 @@
 package entity;
 
-public class OdOrtodoncia extends Odontologo {
+import java.io.Serializable;
+
+
+public class OdOrtodoncia extends Odontologo implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public OdOrtodoncia() {}
 

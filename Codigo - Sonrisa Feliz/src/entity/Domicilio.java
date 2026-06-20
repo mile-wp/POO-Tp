@@ -1,6 +1,10 @@
 package entity;
 
-public class Domicilio {
+import java.io.Serializable;
+
+public class Domicilio implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String calle;
     private String altura;

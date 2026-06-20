@@ -12,7 +12,7 @@ public class OdontologoRepository implements IRepository<Odontologo> {
 
     private Map<Long, Odontologo> tablaOdontologos = new HashMap<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = "src/data/odontologos.dat";
+    private static final String FILE_NAME = "C:/Users/Usuario/OneDrive/Escritorio/POO-Tp/Codigo - Sonrisa Feliz/src/data/odontologos.dat";
 
     public OdontologoRepository() {
         cargarDesdeArchivo();

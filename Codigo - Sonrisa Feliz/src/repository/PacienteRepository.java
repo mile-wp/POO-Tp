@@ -12,7 +12,7 @@ public class PacienteRepository implements IRepository<Paciente> {
 
     private Map<Long, Paciente> tablaPacientes = new HashMap<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = "src/data/pacientes.dat";
+    private static final String FILE_NAME = "C:/Users/Usuario/OneDrive/Escritorio/POO-Tp/Codigo - Sonrisa Feliz/src/data/pacientes.dat";
 
     public PacienteRepository() {
         cargarDesdeArchivo();

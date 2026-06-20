@@ -10,7 +10,7 @@ public class TurnoRepository implements IRepository<Turno> {
 
     private List<Turno> tablaTurnos = new ArrayList<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = "src/data/turnos.dat";
+    private static final String FILE_NAME = "C:/Users/Usuario/OneDrive/Escritorio/POO-Tp/Codigo - Sonrisa Feliz/src/data/turnos.dat";
 
     public TurnoRepository() {
         cargarDesdeArchivo();

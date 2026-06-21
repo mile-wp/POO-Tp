@@ -12,10 +12,32 @@ public class OdontologoRepository implements IRepository<Odontologo> {
 
     private Map<Long, Odontologo> tablaOdontologos = new HashMap<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = "src/data/odontologos.dat";
+    private String FILE_NAME; // Ya no es constante, se calcula dinámicamente
 
     public OdontologoRepository() {
+        inicializarPersistencia();
         cargarDesdeArchivo();
+    }
+
+    private void inicializarPersistencia() {
+        File dataFolder = encontrarCarpetaData();
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+        this.FILE_NAME = dataFolder.getAbsolutePath() + File.separator + "odontologos.dat";
+    }
+
+    private File encontrarCarpetaData() {
+        // Opción 1: Intentar buscar en la ruta estándar (apertura desde 'Codigo - Sonrisa Feliz')
+        File f = new File("src" + File.separator + "data");
+        if (f.exists()) return f;
+
+        // Opción 2: Respaldo buscando desde 'POO-Tp'
+        f = new File("Codigo - Sonrisa Feliz" + File.separator + "src" + File.separator + "data");
+        if (f.exists()) return f;
+
+        // Opción 3: Fallback por si ninguna existe (crea la carpeta donde está parado el IDE)
+        return new File("src" + File.separator + "data");
     }
 
     // --- MÉTODOS DE PERSISTENCIA ---
@@ -23,9 +45,9 @@ public class OdontologoRepository implements IRepository<Odontologo> {
     private void guardarEnArchivo() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             out.writeObject(tablaOdontologos);
-            out.writeObject(generadorId); // Guardamos también el ID actual para no perder la secuencia
+            out.writeObject(generadorId);
         } catch (IOException e) {
-            System.err.println("Error al guardar odontólogos en archivo: " + e.getMessage());
+            System.err.println("Error al guardar: " + e.getMessage());
         }
     }
 
@@ -37,7 +59,7 @@ public class OdontologoRepository implements IRepository<Odontologo> {
                 tablaOdontologos = (Map<Long, Odontologo>) in.readObject();
                 generadorId = (Long) in.readObject();
             } catch (IOException | ClassNotFoundException e) {
-                System.err.println("Error al cargar odontólogos desde archivo: " + e.getMessage());
+                System.err.println("Error al cargar: " + e.getMessage());
             }
         }
     }
@@ -49,7 +71,7 @@ public class OdontologoRepository implements IRepository<Odontologo> {
         odontologo.setId(generadorId);
         tablaOdontologos.put(generadorId, odontologo);
         generadorId++;
-        guardarEnArchivo(); // Persistimos tras el cambio
+        guardarEnArchivo();
         return odontologo;
     }
 
@@ -66,14 +88,14 @@ public class OdontologoRepository implements IRepository<Odontologo> {
     @Override
     public void eliminar(Long id) {
         tablaOdontologos.remove(id);
-        guardarEnArchivo(); // Persistimos tras el cambio
+        guardarEnArchivo();
     }
 
     @Override
     public Odontologo actualizar(Odontologo odontologoModificado) {
         if (tablaOdontologos.containsKey(odontologoModificado.getId())) {
             tablaOdontologos.put(odontologoModificado.getId(), odontologoModificado);
-            guardarEnArchivo(); // Persistimos tras el cambio
+            guardarEnArchivo();
             return odontologoModificado;
         }
         return null;

@@ -10,10 +10,32 @@ public class TurnoRepository implements IRepository<Turno> {
 
     private List<Turno> tablaTurnos = new ArrayList<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = "C:/Users/Usuario/OneDrive/Escritorio/POO-Tp/Codigo - Sonrisa Feliz/src/data/turnos.dat";
+    private String FILE_NAME; // Dinámico
 
     public TurnoRepository() {
+        inicializarPersistencia();
         cargarDesdeArchivo();
+    }
+
+    private void inicializarPersistencia() {
+        File dataFolder = encontrarCarpetaData();
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+        this.FILE_NAME = dataFolder.getAbsolutePath() + File.separator + "turnos.dat";
+    }
+
+    private File encontrarCarpetaData() {
+        // 1. Ruta estándar (si el IDE está en 'Codigo - Sonrisa Feliz')
+        File f = new File("src" + File.separator + "data");
+        if (f.exists()) return f;
+
+        // 2. Respaldo (si el IDE está en 'POO-Tp')
+        f = new File("Codigo - Sonrisa Feliz" + File.separator + "src" + File.separator + "data");
+        if (f.exists()) return f;
+
+        // 3. Fallback: creación local
+        return new File("src" + File.separator + "data");
     }
 
     // --- MÉTODOS DE PERSISTENCIA ---
@@ -47,7 +69,7 @@ public class TurnoRepository implements IRepository<Turno> {
         turno.setId(generadorId);
         generadorId++;
         tablaTurnos.add(turno);
-        guardarEnArchivo(); // Persistencia automática
+        guardarEnArchivo();
         return turno;
     }
 
@@ -66,7 +88,7 @@ public class TurnoRepository implements IRepository<Turno> {
     @Override
     public void eliminar(Long id) {
         if (tablaTurnos.removeIf(turno -> turno.getId().equals(id))) {
-            guardarEnArchivo(); // Persistencia automática
+            guardarEnArchivo();
         }
     }
 
@@ -75,7 +97,7 @@ public class TurnoRepository implements IRepository<Turno> {
         for (int i = 0; i < tablaTurnos.size(); i++) {
             if (tablaTurnos.get(i).getId().equals(turnoModificado.getId())) {
                 tablaTurnos.set(i, turnoModificado);
-                guardarEnArchivo(); // Persistencia automática
+                guardarEnArchivo();
                 return turnoModificado;
             }
         }

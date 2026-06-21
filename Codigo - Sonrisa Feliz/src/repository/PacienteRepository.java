@@ -12,10 +12,32 @@ public class PacienteRepository implements IRepository<Paciente> {
 
     private Map<Long, Paciente> tablaPacientes = new HashMap<>();
     private Long generadorId = 1L;
-    private static final String FILE_NAME = "C:/Users/Usuario/OneDrive/Escritorio/POO-Tp/Codigo - Sonrisa Feliz/src/data/pacientes.dat";
+    private String FILE_NAME; // Dinámico
 
     public PacienteRepository() {
+        inicializarPersistencia();
         cargarDesdeArchivo();
+    }
+
+    private void inicializarPersistencia() {
+        File dataFolder = encontrarCarpetaData();
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+        this.FILE_NAME = dataFolder.getAbsolutePath() + File.separator + "pacientes.dat";
+    }
+
+    private File encontrarCarpetaData() {
+        // 1. Intentar en la ruta directa de 'Codigo - Sonrisa Feliz'
+        File f = new File("src" + File.separator + "data");
+        if (f.exists()) return f;
+
+        // 2. Respaldo por si abrieron desde 'POO-Tp'
+        f = new File("Codigo - Sonrisa Feliz" + File.separator + "src" + File.separator + "data");
+        if (f.exists()) return f;
+
+        // 3. Fallback: crea la carpeta donde esté parado el IDE
+        return new File("src" + File.separator + "data");
     }
 
     // --- MÉTODOS DE PERSISTENCIA ---
@@ -49,7 +71,7 @@ public class PacienteRepository implements IRepository<Paciente> {
         paciente.setId(generadorId);
         tablaPacientes.put(generadorId, paciente);
         generadorId++;
-        guardarEnArchivo(); // Persistencia automática
+        guardarEnArchivo();
         return paciente;
     }
 
@@ -66,14 +88,14 @@ public class PacienteRepository implements IRepository<Paciente> {
     @Override
     public void eliminar(Long id) {
         tablaPacientes.remove(id);
-        guardarEnArchivo(); // Actualizamos archivo tras eliminar
+        guardarEnArchivo();
     }
 
     @Override
     public Paciente actualizar(Paciente pacienteModificado) {
         if (tablaPacientes.containsKey(pacienteModificado.getId())) {
             tablaPacientes.put(pacienteModificado.getId(), pacienteModificado);
-            guardarEnArchivo(); // Actualizamos archivo tras modificar
+            guardarEnArchivo();
             return pacienteModificado;
         }
         return null;

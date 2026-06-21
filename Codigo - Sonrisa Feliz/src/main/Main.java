@@ -1,17 +1,14 @@
 package main;
 
-import view.Menu;
-
+import gui.VentanaPrincipal;
+import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
-
-        Menu menu = new Menu();
-
-        System.out.println("SISTEMA DE GESTIÓN CLINICA 'SONRISA FELIZ' - CARGANDO...");
-
-        menu.iniciar();
-
-        System.out.println("\nGracias por utilizar el sistema. ¡Hasta pronto!");
+        // Ejecución segura de la GUI en el Event Dispatch Thread (EDT)
+        SwingUtilities.invokeLater(() -> {
+            VentanaPrincipal ventana = new VentanaPrincipal();
+            ventana.setVisible(true);
+        });
     }
 }

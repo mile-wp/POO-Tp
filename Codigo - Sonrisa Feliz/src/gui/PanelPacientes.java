@@ -13,10 +13,11 @@ public class PanelPacientes extends JPanel {
     private JTextField txtNombre, txtApellido, txtDni, txtEmail, txtTelefono;
     private JTextField txtCalle, txtAltura, txtLocalidad, txtProvincia;
     private JComboBox<String> cmbCobertura;
-    private JTextField txtDatoCobertura; // Sirve para Obra Social o Tarifa Base
+    private JTextField txtDatoCobertura;
     private JLabel lblDatoCobertura;
     private JTable tablaPacientes;
     private DefaultTableModel modeloTabla;
+    private Long idPacienteSeleccionado = null; // Almacena el ID en caso de edición
 
     public PanelPacientes(ClinicaController controller) {
         this.controller = controller;
@@ -26,7 +27,6 @@ public class PanelPacientes extends JPanel {
     }
 
     private void inicializarComponentes() {
-        // Formulario (Izquierda)
         JPanel pnlForm = new JPanel(new GridLayout(12, 2, 5, 5));
         pnlForm.setBorder(BorderFactory.createTitledBorder("Registrar / Editar Paciente"));
 
@@ -47,7 +47,6 @@ public class PanelPacientes extends JPanel {
         lblDatoCobertura = new JLabel("Tarifa Base:"); pnlForm.add(lblDatoCobertura);
         txtDatoCobertura = new JTextField(); pnlForm.add(txtDatoCobertura);
 
-        // Evento de cambio de cobertura
         cmbCobertura.addActionListener(e -> {
             if (cmbCobertura.getSelectedIndex() == 0) {
                 lblDatoCobertura.setText("Tarifa Base:");
@@ -56,21 +55,63 @@ public class PanelPacientes extends JPanel {
             }
         });
 
-        JButton btnGuardar = new JButton("Guardar Paciente");
-        btnGuardar.addActionListener(e -> registrarPaciente());
-        
+        JButton btnGuardar = new JButton("Guardar / Modificar Paciente");
+        btnGuardar.addActionListener(e -> guardarPaciente());
+
+        JButton btnLimpiar = new JButton("Limpiar Formulario");
+        btnLimpiar.addActionListener(e -> limpiarFormulario());
+
+        JPanel pnlBotones = new JPanel(new GridLayout(1, 2, 5, 5));
+        pnlBotones.add(btnGuardar); pnlBotones.add(btnLimpiar);
+
         JPanel pnlIzquierdo = new JPanel(new BorderLayout());
         pnlIzquierdo.add(pnlForm, BorderLayout.CENTER);
-        pnlIzquierdo.add(btnGuardar, BorderLayout.SOUTH);
+        pnlIzquierdo.add(pnlBotones, BorderLayout.SOUTH);
         add(pnlIzquierdo, BorderLayout.WEST);
 
-        // Tabla (Derecha)
-        modeloTabla = new DefaultTableModel(new Object[]{"ID", "Nombre", "Apellido", "DNI"}, 0);
+        modeloTabla = new DefaultTableModel(new Object[]{"ID", "Nombre", "Apellido", "DNI"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
         tablaPacientes = new JTable(modeloTabla);
+
+        // Listener de fila seleccionada para la edición
+        tablaPacientes.getSelectionModel().addListSelectionListener(e -> {
+            int fila = tablaPacientes.getSelectedRow();
+            if (fila != -1 && !e.getValueIsAdjusting()) {
+                Long id = (Long) tablaPacientes.getValueAt(fila, 0);
+                controller.buscarPacienteId(id).ifPresent(this::cargarPacienteEnFormulario);
+            }
+        });
+
         add(new JScrollPane(tablaPacientes), BorderLayout.CENTER);
     }
 
-    private void registrarPaciente() {
+    private void cargarPacienteEnFormulario(Paciente p) {
+        idPacienteSeleccionado = p.getId();
+        txtNombre.setText(p.getNombre());
+        txtApellido.setText(p.getApellido());
+        txtDni.setText(p.getDni());
+        txtEmail.setText(p.getEmail());
+        txtTelefono.setText(p.getTelefono());
+
+        if (p.getDomicilio() != null) {
+            txtCalle.setText(p.getDomicilio().getCalle());
+            txtAltura.setText(p.getDomicilio().getAltura());
+            txtLocalidad.setText(p.getDomicilio().getLocalidad());
+            txtProvincia.setText(p.getDomicilio().getProvincia());
+        }
+
+        if (p instanceof PacienteParticular pp) {
+            cmbCobertura.setSelectedIndex(0);
+            txtDatoCobertura.setText(String.valueOf(pp.getTarifaBase()));
+        } else if (p instanceof PacienteObraSocial pos) {
+            cmbCobertura.setSelectedIndex(1);
+            txtDatoCobertura.setText(pos.getNombreObraSocial());
+        }
+    }
+
+    private void guardarPaciente() {
         try {
             Domicilio dom = new Domicilio(txtCalle.getText(), txtAltura.getText(), txtLocalidad.getText(), txtProvincia.getText());
             Paciente p;
@@ -82,10 +123,13 @@ public class PanelPacientes extends JPanel {
             } else {
                 PacienteObraSocial os = new PacienteObraSocial();
                 os.setNombreObraSocial(txtDatoCobertura.getText());
-                os.setNumAfiliado("AF-" + txtDni.getText()); // Simplificación para asignación rápida
+                os.setNumAfiliado("AF-" + txtDni.getText());
                 p = os;
             }
 
+            if (idPacienteSeleccionado != null) {
+                p.setId(idPacienteSeleccionado);
+            }
             p.setNombre(txtNombre.getText());
             p.setApellido(txtApellido.getText());
             p.setDni(txtDni.getText());
@@ -95,7 +139,7 @@ public class PanelPacientes extends JPanel {
             p.setDomicilio(dom);
 
             controller.registrarPaciente(p);
-            JOptionPane.showMessageDialog(this, "Paciente registrado con éxito.");
+            JOptionPane.showMessageDialog(this, "Paciente guardado con éxito.");
             limpiarFormulario();
             cargarTabla();
         } catch (ClinicaException ex) {
@@ -113,9 +157,11 @@ public class PanelPacientes extends JPanel {
     }
 
     private void limpiarFormulario() {
+        idPacienteSeleccionado = null;
         txtNombre.setText(""); txtApellido.setText(""); txtDni.setText("");
         txtEmail.setText(""); txtTelefono.setText(""); txtCalle.setText("");
         txtAltura.setText(""); txtLocalidad.setText(""); txtProvincia.setText("");
         txtDatoCobertura.setText("");
+        tablaPacientes.clearSelection();
     }
 }

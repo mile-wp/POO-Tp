@@ -1,6 +1,9 @@
 package entity;
 
-public class OdExtraccion extends Odontologo {
+import java.io.Serializable;
+
+public class OdExtraccion extends Odontologo implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public OdExtraccion() {}
 

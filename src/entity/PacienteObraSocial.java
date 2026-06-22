@@ -1,8 +1,11 @@
 package entity;
 
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class PacienteObraSocial extends Paciente {
+public class PacienteObraSocial extends Paciente implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String nombreObraSocial;
     private String numAfiliado;
 

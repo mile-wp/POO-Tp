@@ -47,22 +47,46 @@ public class PanelPacientes extends JPanel {
         lblDatoCobertura = new JLabel("Tarifa Base:"); pnlForm.add(lblDatoCobertura);
         txtDatoCobertura = new JTextField(); pnlForm.add(txtDatoCobertura);
 
-        cmbCobertura.addActionListener(e -> {
-            if (cmbCobertura.getSelectedIndex() == 0) {
-                lblDatoCobertura.setText("Tarifa Base:");
-            } else {
-                lblDatoCobertura.setText("Obra Social (Nombre):");
+        // ActionListener tradicional sin lambdas
+        cmbCobertura.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (cmbCobertura.getSelectedIndex() == 0) {
+                    lblDatoCobertura.setText("Tarifa Base:");
+                } else {
+                    lblDatoCobertura.setText("Obra Social (Nombre):");
+                }
             }
         });
 
-        JButton btnGuardar = new JButton("Guardar / Modificar Paciente");
-        btnGuardar.addActionListener(e -> guardarPaciente());
+        JButton btnGuardar = new JButton("Guardar Paciente");
+        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                guardarPaciente();
+            }
+        });
+
+        JButton btnModificar = new JButton("Modificar Paciente");
+        btnModificar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                modificarPaciente();
+            }
+        });
 
         JButton btnLimpiar = new JButton("Limpiar Formulario");
-        btnLimpiar.addActionListener(e -> limpiarFormulario());
+        btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                limpiarFormulario();
+            }
+        });
 
-        JPanel pnlBotones = new JPanel(new GridLayout(1, 2, 5, 5));
-        pnlBotones.add(btnGuardar); pnlBotones.add(btnLimpiar);
+        JPanel pnlBotones = new JPanel(new GridLayout(1, 3, 5, 5));
+        pnlBotones.add(btnGuardar);
+        pnlBotones.add(btnModificar);
+        pnlBotones.add(btnLimpiar);
 
         JPanel pnlIzquierdo = new JPanel(new BorderLayout());
         pnlIzquierdo.add(pnlForm, BorderLayout.CENTER);
@@ -75,16 +99,67 @@ public class PanelPacientes extends JPanel {
         };
         tablaPacientes = new JTable(modeloTabla);
 
-        // Listener de fila seleccionada para la edición
-        tablaPacientes.getSelectionModel().addListSelectionListener(e -> {
-            int fila = tablaPacientes.getSelectedRow();
-            if (fila != -1 && !e.getValueIsAdjusting()) {
-                Long id = (Long) tablaPacientes.getValueAt(fila, 0);
-                controller.buscarPacienteId(id).ifPresent(this::cargarPacienteEnFormulario);
+        // Opción alternativa limpia y sin lambdas usando MouseListener sobre la tabla
+        tablaPacientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int fila = tablaPacientes.getSelectedRow();
+                if (fila != -1) {
+                    idPacienteSeleccionado = (Long) tablaPacientes.getValueAt(fila, 0);
+
+                    java.util.Optional<entity.Paciente> op = controller.buscarPacienteId(idPacienteSeleccionado);
+                    if (op.isPresent()) {
+                        entity.Paciente p = op.get();
+                        cargarPacienteEnFormulario(p);
+                    }
+                }
             }
         });
 
         add(new JScrollPane(tablaPacientes), BorderLayout.CENTER);
+    } // Acá se cierra correctamente inicializarComponentes()
+
+    private void modificarPaciente() {
+        if (idPacienteSeleccionado == null) {
+            JOptionPane.showMessageDialog(this, "Seleccione un paciente de la tabla.");
+            return;
+        }
+        try {
+            Domicilio dom = new Domicilio();
+            dom.setCalle(txtCalle.getText());
+            dom.setAltura(txtAltura.getText());
+            dom.setLocalidad(txtLocalidad.getText());
+            dom.setProvincia(txtProvincia.getText());
+
+            Paciente p = (cmbCobertura.getSelectedIndex() == 0) ? new PacienteParticular() : new PacienteObraSocial();
+            p.setId(idPacienteSeleccionado);
+            p.setNombre(txtNombre.getText());
+            p.setApellido(txtApellido.getText());
+            p.setDni(txtDni.getText());
+            p.setEmail(txtEmail.getText());
+            p.setTelefono(txtTelefono.getText());
+            p.setDomicilio(dom);
+
+            java.util.Optional<Paciente> prev = controller.buscarPacienteId(idPacienteSeleccionado);
+            if (prev.isPresent()) {
+                p.setFechaIngreso(prev.get().getFechaIngreso());
+            }
+
+            if (p instanceof PacienteParticular) {
+                ((PacienteParticular) p).setTarifaBase(Double.parseDouble(txtDatoCobertura.getText()));
+            } else {
+                ((PacienteObraSocial) p).setNombreObraSocial(txtDatoCobertura.getText());
+                ((PacienteObraSocial) p).setNumAfiliado("AF-" + p.getDni());
+            }
+
+            controller.modificarPaciente(p);
+
+            JOptionPane.showMessageDialog(this, "Paciente modificado con éxito.");
+            limpiarFormulario();
+            cargarTabla();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al modificar: " + ex.getMessage());
+        }
     }
 
     private void cargarPacienteEnFormulario(Paciente p) {
@@ -102,10 +177,12 @@ public class PanelPacientes extends JPanel {
             txtProvincia.setText(p.getDomicilio().getProvincia());
         }
 
-        if (p instanceof PacienteParticular pp) {
+        if (p instanceof PacienteParticular) {
+            PacienteParticular pp = (PacienteParticular) p;
             cmbCobertura.setSelectedIndex(0);
             txtDatoCobertura.setText(String.valueOf(pp.getTarifaBase()));
-        } else if (p instanceof PacienteObraSocial pos) {
+        } else if (p instanceof PacienteObraSocial) {
+            PacienteObraSocial pos = (PacienteObraSocial) p;
             cmbCobertura.setSelectedIndex(1);
             txtDatoCobertura.setText(pos.getNombreObraSocial());
         }

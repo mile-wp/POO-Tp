@@ -29,6 +29,22 @@ public class ClinicaController {
     public Optional<Paciente> buscarPacienteId(Long id) { return pacienteService.buscarPorId(id); }
     public Optional<Odontologo> buscarOdontologoId(Long id) { return odontologoService.buscarPorId(id); }
 
+    //Para actualizar y permitir modificaciones de los datos
+    public Paciente modificarPaciente(Paciente p) {
+        return pacienteService.actualizar(p);
+    }
+
+    public Odontologo modificarOdontologo(Odontologo o) {
+        return odontologoService.actualizar(o);
+    }
+
+
+
+
+    //public Turno modificarTurno(Turno t){
+      //  return turnoService.actualizar(t);
+   // }
+
 
 }
 

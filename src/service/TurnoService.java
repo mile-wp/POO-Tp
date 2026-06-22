@@ -92,11 +92,11 @@ public class TurnoService implements IService<Turno> {
                 double costoFinal = pP.getTarifaBase();
 
                 if (odontologoReal instanceof OdOrtodoncia) {
-                    costoFinal *= ((OdOrtodoncia) odontologoReal).getRecargoEspecialidad();
+                    costoFinal += ((OdOrtodoncia) odontologoReal).getRecargoEspecialidad();
                 } else if (odontologoReal instanceof OdEndodoncia) {
-                    costoFinal *= ((OdEndodoncia) odontologoReal).getRecargoEspecialidad();
+                    costoFinal += ((OdEndodoncia) odontologoReal).getRecargoEspecialidad();
                 } else if (odontologoReal instanceof OdExtraccion) {
-                    costoFinal *= ((OdExtraccion) odontologoReal).getRecargoEspecialidad();
+                    costoFinal += ((OdExtraccion) odontologoReal).getRecargoEspecialidad();
                 }
                 turno.setMontoFacturacion(costoFinal);
             } else if (pacienteReal instanceof PacienteObraSocial) {

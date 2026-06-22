@@ -107,7 +107,7 @@ public class TurnoService implements IService<Turno> {
             turno.setOdontologo(odontologoReal);
             turno.setEstado(EstadoTurno.PENDIENTE);
 
-            System.out.println("✅ Turno validado exitosamente.");
+            System.out.println("Turno validado exitosamente.");
             return turnoRepository.guardar(turno);
 
         } catch (ClinicaException e) {

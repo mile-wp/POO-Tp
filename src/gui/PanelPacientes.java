@@ -55,14 +55,46 @@ public class PanelPacientes extends JPanel {
             }
         });
 
-        JButton btnGuardar = new JButton("Guardar / Modificar Paciente");
+        JButton btnGuardar = new JButton("Guardar Paciente");
         btnGuardar.addActionListener(e -> guardarPaciente());
+
+        JButton btnModificar = new JButton("Modificar Paciente");
+        btnModificar.addActionListener(e -> actualizarPaciente());
+
+        JButton btnEliminar = new JButton("Eliminar Paciente");
+        btnEliminar.addActionListener(e -> {
+            if (idPacienteSeleccionado == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Seleccione un paciente de la tabla."
+                );
+                return;
+            }
+
+            int opcion = JOptionPane.showConfirmDialog(
+                    this,
+                    "¿Desea eliminar el paciente seleccionado?",
+                    "Confirmar",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (opcion == JOptionPane.YES_OPTION) {
+                controller.eliminarPacientePorId(idPacienteSeleccionado);
+                cargarTabla();
+                limpiarFormulario();
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Paciente eliminado correctamente.");
+            }
+        });
 
         JButton btnLimpiar = new JButton("Limpiar Formulario");
         btnLimpiar.addActionListener(e -> limpiarFormulario());
 
-        JPanel pnlBotones = new JPanel(new GridLayout(1, 2, 5, 5));
+        JPanel pnlBotones = new JPanel(new GridLayout(2, 2, 5, 5));
         pnlBotones.add(btnGuardar); pnlBotones.add(btnLimpiar);
+        pnlBotones.add(btnModificar); pnlBotones.add(btnEliminar);
 
         JPanel pnlIzquierdo = new JPanel(new BorderLayout());
         pnlIzquierdo.add(pnlForm, BorderLayout.CENTER);
@@ -127,9 +159,6 @@ public class PanelPacientes extends JPanel {
                 p = os;
             }
 
-            if (idPacienteSeleccionado != null) {
-                p.setId(idPacienteSeleccionado);
-            }
             p.setNombre(txtNombre.getText());
             p.setApellido(txtApellido.getText());
             p.setDni(txtDni.getText());
@@ -149,6 +178,79 @@ public class PanelPacientes extends JPanel {
         }
     }
 
+    private void actualizarPaciente() {
+        if (idPacienteSeleccionado == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Seleccione un paciente de la tabla.",
+                    "Atención",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Domicilio dom = new Domicilio(
+                    txtCalle.getText(),
+                    txtAltura.getText(),
+                    txtLocalidad.getText(),
+                    txtProvincia.getText()
+            );
+
+            Paciente original = controller.buscarPacienteId(idPacienteSeleccionado).orElseThrow();
+
+            Paciente p;
+
+
+            if (cmbCobertura.getSelectedIndex() == 0) {
+                PacienteParticular particular = new PacienteParticular();
+                particular.setTarifaBase(
+                        Double.parseDouble(txtDatoCobertura.getText())
+                );
+                p = particular;
+            } else {
+                PacienteObraSocial os = new PacienteObraSocial();
+                os.setNombreObraSocial(txtDatoCobertura.getText());
+                os.setNumAfiliado("AF-" + txtDni.getText());
+                p = os;
+            }
+
+            p.setId(idPacienteSeleccionado);
+            p.setNombre(txtNombre.getText());
+            p.setApellido(txtApellido.getText());
+            p.setDni(txtDni.getText());
+            p.setEmail(txtEmail.getText());
+            p.setTelefono(txtTelefono.getText());
+            p.setDomicilio(dom);
+            p.setFechaIngreso(original.getFechaIngreso());
+
+            controller.actualizarPaciente(p);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Paciente actualizado correctamente."
+            );
+
+            limpiarFormulario();
+            cargarTabla();
+
+        } catch (ClinicaException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error de Negocio",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Verifique los datos ingresados: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
     private void cargarTabla() {
         modeloTabla.setRowCount(0);
         for (Paciente p : controller.listarPacientes()) {
@@ -162,6 +264,7 @@ public class PanelPacientes extends JPanel {
         txtEmail.setText(""); txtTelefono.setText(""); txtCalle.setText("");
         txtAltura.setText(""); txtLocalidad.setText(""); txtProvincia.setText("");
         txtDatoCobertura.setText("");
+        cmbCobertura.setSelectedIndex(0);
         tablaPacientes.clearSelection();
     }
 }

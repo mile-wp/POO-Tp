@@ -37,14 +37,21 @@ public class PanelOdontologos extends JPanel {
 
         pnlForm.add(new JLabel("Recargo Especialidad:")); txtRecargo = new JTextField(); pnlForm.add(txtRecargo);
 
-        JButton btnGuardar = new JButton("Guardar / Modificar");
+        JButton btnGuardar = new JButton("Guardar Odontólogo");
         btnGuardar.addActionListener(e -> guardarOdontologo());
 
-        JButton btnLimpiar = new JButton("Limpiar / Nuevo");
+        JButton btnModificar = new JButton("Modificar Odontólog");
+        btnModificar.addActionListener(e -> modificarOdontologo());
+
+        JButton btnLimpiar = new JButton("Limpiar Formulario");
         btnLimpiar.addActionListener(e -> limpiarFormulario());
 
-        JPanel pnlBotones = new JPanel(new GridLayout(1, 2, 5, 5));
+        JButton btnEliminar = new JButton("Eliminar Odontólogo");
+        btnEliminar.addActionListener(e -> eliminarOdontologo());
+
+        JPanel pnlBotones = new JPanel(new GridLayout(2, 2, 5, 5));
         pnlBotones.add(btnGuardar); pnlBotones.add(btnLimpiar);
+        pnlBotones.add(btnModificar); pnlBotones.add(btnEliminar);
 
         JPanel pnlIzquierdo = new JPanel(new BorderLayout());
         pnlIzquierdo.add(pnlForm, BorderLayout.CENTER);
@@ -90,6 +97,15 @@ public class PanelOdontologos extends JPanel {
     }
 
     private void guardarOdontologo() {
+
+        if (idOdontologoSeleccionado != null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Está editando un odontólogo. Use el botón Modificar."
+            );
+            return;
+        }
+
         try {
             Double recargo = Double.parseDouble(txtRecargo.getText());
             Odontologo o = switch (cmbEspecialidad.getSelectedIndex()) {
@@ -100,9 +116,7 @@ public class PanelOdontologos extends JPanel {
             };
 
             if (o != null) {
-                if (idOdontologoSeleccionado != null) {
-                    o.setId(idOdontologoSeleccionado);
-                }
+
                 o.setNombre(txtNombre.getText());
                 o.setApellido(txtApellido.getText());
                 o.setDni(txtDni.getText());
@@ -131,5 +145,104 @@ public class PanelOdontologos extends JPanel {
         idOdontologoSeleccionado = null;
         txtNombre.setText(""); txtApellido.setText(""); txtDni.setText(""); txtMatricula.setText(""); txtRecargo.setText("");
         tablaOdontologos.clearSelection();
+    }
+
+    private void modificarOdontologo() {
+        if (idOdontologoSeleccionado == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Seleccione un odontólogo de la tabla.",
+                    "Atención",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Double recargo = Double.parseDouble(txtRecargo.getText());
+
+            Odontologo o = switch (cmbEspecialidad.getSelectedIndex()) {
+                case 0 -> {
+                    OdOrtodoncia od = new OdOrtodoncia();
+                    od.setRecargoEspecialidad(recargo);
+                    yield od;
+                }
+                case 1 -> {
+                    OdEndodoncia od = new OdEndodoncia();
+                    od.setRecargoEspecialidad(recargo);
+                    yield od;
+                }
+                case 2 -> {
+                    OdExtraccion od = new OdExtraccion();
+                    od.setRecargoEspecialidad(recargo);
+                    yield od;
+                }
+                default -> null;
+            };
+
+            if (o != null) {
+                o.setId(idOdontologoSeleccionado);
+                o.setNombre(txtNombre.getText());
+                o.setApellido(txtApellido.getText());
+                o.setDni(txtDni.getText());
+                o.setMatricula(txtMatricula.getText());
+
+                controller.actualizarOdontologo(o);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Odontólogo actualizado correctamente."
+                );
+
+                limpiarFormulario();
+                cargarTabla();
+            }
+
+        } catch (ClinicaException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Error de Negocio",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Datos numéricos inválidos.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private void eliminarOdontologo() {
+        if (idOdontologoSeleccionado == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Seleccione un odontólogo de la tabla.",
+                    "Atención",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Desea eliminar el odontólogo seleccionado?",
+                "Confirmar",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            controller.eliminarOdontologoPorId(idOdontologoSeleccionado);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Odontólogo eliminado correctamente."
+            );
+
+            limpiarFormulario();
+            cargarTabla();
+        }
     }
 }

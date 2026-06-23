@@ -94,11 +94,18 @@ public class TurnoRepository implements IRepository<Turno> {
 
     @Override
     public Turno actualizar(Turno turnoModificado) {
-        for (int i = 0; i < tablaTurnos.size(); i++) {
-            if (tablaTurnos.get(i).getId().equals(turnoModificado.getId())) {
-                tablaTurnos.set(i, turnoModificado);
+
+        for (Turno actual : tablaTurnos) {
+            if (actual.getId().equals(turnoModificado.getId())) {
+
+                actual.setPaciente(turnoModificado.getPaciente());
+                actual.setOdontologo(turnoModificado.getOdontologo());
+                actual.setFecha(turnoModificado.getFecha());
+                actual.setHora(turnoModificado.getHora());
+                actual.setEstado(turnoModificado.getEstado());
+
                 guardarEnArchivo();
-                return turnoModificado;
+                return actual;
             }
         }
         return null;

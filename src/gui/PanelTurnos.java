@@ -55,14 +55,21 @@ public class PanelTurnos extends JPanel {
         cmbEstado = new JComboBox<>(EstadoTurno.values());
         pnlForm.add(cmbEstado);
 
-        JButton btnGuardar = new JButton("Guardar / Actualizar");
+        JButton btnGuardar = new JButton("Agendar nuevo Turno");
         btnGuardar.addActionListener(e -> guardarTurno());
 
-        JButton btnLimpiar = new JButton("Limpiar / Nuevo");
+        JButton btnModificar = new JButton("Modificar Turno");
+        btnModificar.addActionListener(e -> modificarTurno());
+
+        JButton btnLimpiar = new JButton("Limpiar Formulario");
         btnLimpiar.addActionListener(e -> limpiarFormulario());
 
-        JPanel pnlBotones = new JPanel(new GridLayout(1, 2, 5, 5));
+        JButton btnEliminar = new JButton("Eliminar Turno");
+        btnEliminar.addActionListener(e -> eliminarTurno());
+
+        JPanel pnlBotones = new JPanel(new GridLayout(2, 2, 5, 5));
         pnlBotones.add(btnGuardar); pnlBotones.add(btnLimpiar);
+        pnlBotones.add(btnModificar); pnlBotones.add(btnEliminar);
 
         JPanel pnlIzquierdo = new JPanel(new BorderLayout());
         pnlIzquierdo.add(pnlForm, BorderLayout.CENTER);
@@ -124,9 +131,7 @@ public class PanelTurnos extends JPanel {
             }
 
             Turno t = new Turno();
-            if (idTurnoSeleccionado != null) {
-                t.setId(idTurnoSeleccionado);
-            }
+
             t.setPaciente(pacOpt.get());
             t.setOdontologo(odoOpt.get());
 
@@ -175,6 +180,131 @@ public class PanelTurnos extends JPanel {
                     t.getEstado(),
                     cobro
             });
+        }
+    }
+
+    private void modificarTurno() {
+        if (idTurnoSeleccionado == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Seleccione un turno de la tabla.",
+                    "Atención",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            Long idPac = Long.parseLong(txtIdPaciente.getText());
+            var pacOpt = controller.buscarPacienteId(idPac);
+
+            if (pacOpt.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Paciente no encontrado.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            Long idOdo = Long.parseLong(txtIdOdontologo.getText());
+            var odoOpt = controller.buscarOdontologoId(idOdo);
+
+            if (odoOpt.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Odontólogo no encontrado.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            Turno original = controller.buscarTurnoId(idTurnoSeleccionado).orElseThrow();
+
+            Turno t = new Turno();
+
+            t.setId(original.getId());
+            t.setMontoFacturacion(original.getMontoFacturacion());
+
+            t.setId(idTurnoSeleccionado);
+            t.setPaciente(pacOpt.get());
+            t.setOdontologo(odoOpt.get());
+
+            Date fechaSpinner = (Date) spinnerFecha.getValue();
+            LocalDate fecha = fechaSpinner.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+
+            t.setFecha(fecha);
+
+            Date horaSpinner = (Date) spinnerHora.getValue();
+            LocalTime hora = horaSpinner.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime();
+
+            t.setHora(hora);
+
+            t.setEstado((EstadoTurno) cmbEstado.getSelectedItem());
+
+            controller.actualizarTurno(t);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Turno actualizado correctamente."
+            );
+
+            limpiarFormulario();
+            cargarTabla();
+
+        } catch (ClinicaException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Regla de Negocio",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Verifique los datos ingresados.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private void eliminarTurno() {
+
+        if (idTurnoSeleccionado == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Seleccione un turno de la tabla.",
+                    "Atención",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Desea eliminar el turno seleccionado?",
+                "Confirmar",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+
+            controller.eliminarTurnoPorId(idTurnoSeleccionado);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Turno eliminado correctamente."
+            );
+
+            limpiarFormulario();
+            cargarTabla();
         }
     }
 
